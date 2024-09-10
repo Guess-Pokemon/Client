@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { ref, set, onValue, update, remove, get } from "firebase/database";
 import { db } from "./config/firebaseConfig";
 import { v4 as uuidv4 } from "uuid";
+import Loader from "./components/Loader";
 
 const PokemonGuessingGame = () => {
   const [gameId, setGameId] = useState("");
@@ -21,10 +22,12 @@ const PokemonGuessingGame = () => {
       while (pokemonIds.size < 4) {
         pokemonIds.add(Math.floor(Math.random() * 898) + 1);
       }
-      
+
       const pokemonData = await Promise.all(
         Array.from(pokemonIds).map(async (id) => {
-          const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`);
+          const response = await fetch(
+            `https://pokeapi.co/api/v2/pokemon/${id}`
+          );
           const data = await response.json();
           return {
             id: data.id,
@@ -33,11 +36,11 @@ const PokemonGuessingGame = () => {
           };
         })
       );
-      
+
       const correctPokemon = pokemonData[Math.floor(Math.random() * 4)];
       return {
         correct: correctPokemon,
-        options: pokemonData.map(p => p.name),
+        options: pokemonData.map((p) => p.name),
       };
     } catch (error) {
       console.error("Failed to fetch Pokémon data:", error);
@@ -97,21 +100,32 @@ const PokemonGuessingGame = () => {
         setGameData(data);
         setPokemon(data?.currentPokemon || { correct: {}, options: [] });
 
-        if (data?.status === "ready" && data?.player1?.guess && data?.player2?.guess) {
+        if (
+          data?.status === "ready" &&
+          data?.player1?.guess &&
+          data?.player2?.guess
+        ) {
           const correctAnswer = data.currentPokemon.correct.name.toLowerCase();
-          const player1Correct = data.player1.guess.toLowerCase() === correctAnswer;
-          const player2Correct = data.player2.guess.toLowerCase() === correctAnswer;
+          const player1Correct =
+            data.player1.guess.toLowerCase() === correctAnswer;
+          const player2Correct =
+            data.player2.guess.toLowerCase() === correctAnswer;
 
           const calculateScore = (isCorrect, timeTaken) => {
             if (!isCorrect) return 0;
             const baseScore = 100;
-            const timeBonus = Math.max(0, 30 - Math.floor(timeTaken / 1000)) * 10;
+            const timeBonus =
+              Math.max(0, 30 - Math.floor(timeTaken / 1000)) * 10;
             return baseScore + timeBonus;
           };
 
           const newScore = {
-            player1: score.player1 + calculateScore(player1Correct, data.player1.timeTaken),
-            player2: score.player2 + calculateScore(player2Correct, data.player2.timeTaken),
+            player1:
+              score.player1 +
+              calculateScore(player1Correct, data.player1.timeTaken),
+            player2:
+              score.player2 +
+              calculateScore(player2Correct, data.player2.timeTaken),
           };
           setScore(newScore);
 
@@ -120,7 +134,7 @@ const PokemonGuessingGame = () => {
             setCountdown(10);
             await update(gameRef, {
               status: "finished",
-              finalScores: newScore
+              finalScores: newScore,
             });
           } else {
             const newPokemonData = await fetchPokemon();
@@ -172,10 +186,10 @@ const PokemonGuessingGame = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-4xl font-bold mb-8">Pokémon Guessing Game</h1>
+      <h1 className="text-5xl font-bold mb-8">Pokémon Guessing Game</h1>
       {!gameId ? (
         <div className="space-y-4">
-          <button 
+          <button
             onClick={createNewGame}
             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
           >
@@ -189,7 +203,7 @@ const PokemonGuessingGame = () => {
               onChange={(e) => setInputGameId(e.target.value)}
               className="border-2 border-gray-300 bg-white h-10 px-5 rounded-lg text-sm focus:outline-none"
             />
-            <button 
+            <button
               onClick={joinExistingGame}
               className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded ml-2"
             >
@@ -199,15 +213,22 @@ const PokemonGuessingGame = () => {
         </div>
       ) : (
         <div>
-          <div className="mb-4">Game ID: {gameId}</div>
+          <div className="mb-4 text-xl">Game ID: {gameId}</div>
           {gameData?.status === "waiting" ? (
-            <p>Waiting for another player to join...</p>
+            <div className="flex flex-col items-center my-10">
+              <div className="my-5">
+                <Loader />
+              </div>
+              <p className="font-bold text-2xl">Waiting for another player to join...</p>
+            </div>
           ) : gameData?.status === "ready" ? (
             <div>
-              <h2 className="text-2xl font-bold mb-4">Guess the Pokémon (Round {gameData.currentRound}/5)</h2>
-              <img 
-                src={pokemon.correct.image} 
-                alt="Pokemon to guess" 
+              <h2 className="text-2xl font-bold mb-4">
+                Guess the Pokémon (Round {gameData.currentRound}/5)
+              </h2>
+              <img
+                src={pokemon.correct.image}
+                alt="Pokemon to guess"
                 className="w-64 h-64 object-contain mx-auto mb-4"
               />
               <div className="text-xl mb-4">
@@ -258,7 +279,9 @@ const PokemonGuessingGame = () => {
                   ? "Player 2 wins!"
                   : "It's a tie!"}
               </div>
-              <div className="mt-4">The game will be deleted in {countdown} seconds.</div>
+              <div className="mt-4">
+                The game will be deleted in {countdown} seconds.
+              </div>
             </div>
           ) : null}
         </div>
