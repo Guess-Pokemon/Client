@@ -3,6 +3,8 @@ import { ref, set, onValue, update, remove, get } from "firebase/database";
 import { db } from "./config/firebaseConfig";
 import { v4 as uuidv4 } from "uuid";
 import Loader from "./components/Loader";
+import { RiFileCopyLine } from "react-icons/ri";
+import { MdDone } from "react-icons/md";
 
 const PokemonGuessingGame = () => {
   const [gameId, setGameId] = useState("");
@@ -15,6 +17,7 @@ const PokemonGuessingGame = () => {
   const [score, setScore] = useState({ player1: 0, player2: 0 });
   const [pokemon, setPokemon] = useState({ correct: {}, options: [] });
   const [selectedOption, setSelectedOption] = useState("");
+  const [isCopied, setIsCopied] = useState(false);
 
   const fetchPokemon = useCallback(async () => {
     try {
@@ -184,6 +187,16 @@ const PokemonGuessingGame = () => {
     }
   }, [countdown, gameFinished, gameId]);
 
+  const handleCopy = () => {
+    navigator.clipboard.writeText(gameId);
+    setIsCopied(true);
+
+    // Reset to original state after 2 seconds
+    setTimeout(() => {
+      setIsCopied(false);
+    }, 2000);
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-5xl font-bold mb-8">Pokémon Guessing Game</h1>
@@ -213,13 +226,23 @@ const PokemonGuessingGame = () => {
         </div>
       ) : (
         <div>
-          <div className="mb-4 text-xl">Game ID: {gameId}</div>
+          <div className="mb-4 text-xl">
+            Game ID: {gameId}
+            <button
+              onClick={handleCopy}
+              className="ml-4 px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+            >
+              {isCopied ? <MdDone /> : <RiFileCopyLine />}
+            </button>
+          </div>
           {gameData?.status === "waiting" ? (
             <div className="flex flex-col items-center my-10">
               <div className="my-5">
                 <Loader />
               </div>
-              <p className="font-bold text-2xl">Waiting for another player to join...</p>
+              <p className="font-bold text-2xl">
+                Waiting for another player to join...
+              </p>
             </div>
           ) : gameData?.status === "ready" ? (
             <div>
