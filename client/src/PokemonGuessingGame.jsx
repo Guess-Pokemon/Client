@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { ref, set, onValue, update, remove, get } from "firebase/database";
-import { db } from "./firebase";
+import { db } from "./config/firebaseConfig";
 import { v4 as uuidv4 } from "uuid";
 
 const PokemonGuessingGame = () => {
@@ -10,118 +10,151 @@ const PokemonGuessingGame = () => {
   const [inputGameId, setInputGameId] = useState("");
   const [hasGuessed, setHasGuessed] = useState(false);
   const [gameFinished, setGameFinished] = useState(false);
-  const [countdown, setCountdown] = useState(0);
+  const [countdown, setCountdown] = useState(30);
   const [score, setScore] = useState({ player1: 0, player2: 0 });
-  const [pokemon, setPokemon] = useState({ name: "", image: "" });
-  const [guess, setGuess] = useState("");
+  const [pokemon, setPokemon] = useState({ correct: {}, options: [] });
+  const [selectedOption, setSelectedOption] = useState("");
 
-  // Fetch Pokémon data
   const fetchPokemon = useCallback(async () => {
     try {
-      const randomId = Math.floor(Math.random() * 898) + 1;
-      const response = await fetch(
-        `https://pokeapi.co/api/v2/pokemon/${randomId}`
+      const pokemonIds = new Set();
+      while (pokemonIds.size < 4) {
+        pokemonIds.add(Math.floor(Math.random() * 898) + 1);
+      }
+      
+      const pokemonData = await Promise.all(
+        Array.from(pokemonIds).map(async (id) => {
+          const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`);
+          const data = await response.json();
+          return {
+            id: data.id,
+            name: data.name,
+            image: data.sprites.other["official-artwork"].front_default,
+          };
+        })
       );
-      const data = await response.json();
+      
+      const correctPokemon = pokemonData[Math.floor(Math.random() * 4)];
       return {
-        name: data.name,
-        image: data.sprites.other["official-artwork"].front_default,
+        correct: correctPokemon,
+        options: pokemonData.map(p => p.name),
       };
     } catch (error) {
       console.error("Failed to fetch Pokémon data:", error);
-      return { name: "Unknown", image: "" };
+      return { correct: { name: "Unknown", image: "" }, options: [] };
     }
   }, []);
 
-  // Handle creating a new game
-  const createGame = async () => {
-    const newGameId = uuidv4(); // unik uuidv4
+  const createNewGame = async () => {
+    const newGameId = uuidv4();
+    const pokemonData = await fetchPokemon();
     const gameRef = ref(db, `games/${newGameId}`);
-    // const pokemonData = await fetchPokemon();
-    await set(gameRef, {
+    const gameData = {
       player1: { guess: "", score: 0 },
       player2: { guess: "", score: 0 },
       currentRound: 1,
       status: "waiting",
-      rounds: 0,
-      // currentPokemon: pokemonData,
-    });
+      currentPokemon: pokemonData,
+      roundStartTime: Date.now(),
+    };
+    await set(gameRef, gameData);
     setGameId(newGameId);
     setCurrentPlayer("player1");
   };
 
-  // Handle joining an existing game
-  const joinGame = async () => {
+  const joinExistingGame = async () => {
     const gameRef = ref(db, `games/${inputGameId}`);
     const snapshot = await get(gameRef);
     const data = snapshot.val();
     if (data && data.status === "waiting") {
-      const pokemonData = await fetchPokemon();
       setGameId(inputGameId);
       setCurrentPlayer("player2");
-      await update(gameRef, { status: "ready", currentPokemon: pokemonData });
+      await update(gameRef, { status: "ready" });
     } else {
       alert("Game not available or already started");
     }
     setInputGameId("");
   };
 
-  // Handle player's guess
   const handleGuess = async () => {
-    if (!hasGuessed && !gameFinished) {
+    if (!hasGuessed && !gameFinished && gameData.status === "ready") {
       const gameRef = ref(db, `games/${gameId}`);
-      await update(gameRef, { [`${currentPlayer}/guess`]: guess });
+      const timeTaken = Date.now() - gameData.roundStartTime;
+      const updates = {};
+      updates[`${currentPlayer}/guess`] = selectedOption;
+      updates[`${currentPlayer}/timeTaken`] = timeTaken;
+      await update(gameRef, updates);
       setHasGuessed(true);
-      setGuess(""); // Clear input after submission
+      setSelectedOption("");
     }
   };
 
-  // Monitor game data
   useEffect(() => {
     if (gameId) {
       const gameRef = ref(db, `games/${gameId}`);
-      onValue(gameRef, async (snapshot) => {
+      const unsubscribe = onValue(gameRef, async (snapshot) => {
         const data = snapshot.val();
         setGameData(data);
-        setPokemon(data?.currentPokemon || { name: "", image: "" });
+        setPokemon(data?.currentPokemon || { correct: {}, options: [] });
 
-        if (data?.player1?.guess && data?.player2?.guess && !gameFinished) {
-          const correctAnswer = data.currentPokemon.name.toLowerCase();
-          const player1Correct =
-            data.player1.guess.toLowerCase() === correctAnswer;
-          const player2Correct =
-            data.player2.guess.toLowerCase() === correctAnswer;
+        if (data?.status === "ready" && data?.player1?.guess && data?.player2?.guess) {
+          const correctAnswer = data.currentPokemon.correct.name.toLowerCase();
+          const player1Correct = data.player1.guess.toLowerCase() === correctAnswer;
+          const player2Correct = data.player2.guess.toLowerCase() === correctAnswer;
 
-          setScore({
-            player1: player1Correct
-              ? data.player1.score + 100
-              : data.player1.score,
-            player2: player2Correct
-              ? data.player2.score + 100
-              : data.player2.score,
-          });
+          const calculateScore = (isCorrect, timeTaken) => {
+            if (!isCorrect) return 0;
+            const baseScore = 100;
+            const timeBonus = Math.max(0, 30 - Math.floor(timeTaken / 1000)) * 10;
+            return baseScore + timeBonus;
+          };
 
-          // Check if the game should end after 5 rounds
+          const newScore = {
+            player1: score.player1 + calculateScore(player1Correct, data.player1.timeTaken),
+            player2: score.player2 + calculateScore(player2Correct, data.player2.timeTaken),
+          };
+          setScore(newScore);
+
           if (data.currentRound >= 5) {
             setGameFinished(true);
             setCountdown(10);
+            await update(gameRef, {
+              status: "finished",
+              finalScores: newScore
+            });
           } else {
-            // Proceed to the next round
+            const newPokemonData = await fetchPokemon();
             await update(gameRef, {
               currentRound: data.currentRound + 1,
-              rounds: data.rounds + 1,
-              currentPokemon: await fetchPokemon(),
-              player1: { ...data.player1, guess: "" },
-              player2: { ...data.player2, guess: "" },
+              currentPokemon: newPokemonData,
+              player1: { guess: "", score: newScore.player1 },
+              player2: { guess: "", score: newScore.player2 },
+              roundStartTime: Date.now(),
             });
-            setHasGuessed(false); // Reset guess status for new round
+            setHasGuessed(false);
+            setCountdown(30);
           }
         }
       });
-    }
-  }, [gameId, gameFinished]);
 
-  // Handle countdown and game deletion
+      return () => unsubscribe();
+    }
+  }, [gameId, score, fetchPokemon]);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 0) {
+          clearInterval(timer);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
   useEffect(() => {
     if (countdown === 0 && gameFinished) {
       const gameRef = ref(db, `games/${gameId}`);
@@ -131,57 +164,104 @@ const PokemonGuessingGame = () => {
           setGameId("");
           setHasGuessed(false);
           setGameFinished(false);
+          setScore({ player1: 0, player2: 0 });
         })
         .catch((error) => console.error("Failed to delete game:", error));
-    } else {
-      const timer = setTimeout(() => setCountdown((prev) => prev - 1), 1000);
-      return () => clearTimeout(timer);
     }
   }, [countdown, gameFinished, gameId]);
 
   return (
-    <div>
-      <h1>Pokémon Guessing Game</h1>
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-4xl font-bold mb-8">Pokémon Guessing Game</h1>
       {!gameId ? (
-        <>
-          <button onClick={createGame}>Create Game</button>
-          <input
-            type="text"
-            placeholder="Enter Game ID"
-            value={inputGameId}
-            onChange={(e) => setInputGameId(e.target.value)}
-          />
-          <button onClick={joinGame}>Join Game</button>
-        </>
+        <div className="space-y-4">
+          <button 
+            onClick={createNewGame}
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          >
+            Create Game
+          </button>
+          <div>
+            <input
+              type="text"
+              placeholder="Enter Game ID"
+              value={inputGameId}
+              onChange={(e) => setInputGameId(e.target.value)}
+              className="border-2 border-gray-300 bg-white h-10 px-5 rounded-lg text-sm focus:outline-none"
+            />
+            <button 
+              onClick={joinExistingGame}
+              className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded ml-2"
+            >
+              Join Game
+            </button>
+          </div>
+        </div>
       ) : (
-        <>
-          {gameData && (
-            <>
-              <div>GameId: {gameId}</div>
-              {pokemon.image && (
-                <div>
-                  <h2>Guess the Pokémon</h2>
-                  <img src={pokemon.image} alt={pokemon.name} />
-                  <div>
-                    Score - Player 1: {score.player1}, Player 2: {score.player2}
-                  </div>
-                </div>
-              )}
+        <div>
+          <div className="mb-4">Game ID: {gameId}</div>
+          {gameData?.status === "waiting" ? (
+            <p>Waiting for another player to join...</p>
+          ) : gameData?.status === "ready" ? (
+            <div>
+              <h2 className="text-2xl font-bold mb-4">Guess the Pokémon (Round {gameData.currentRound}/5)</h2>
+              <img 
+                src={pokemon.correct.image} 
+                alt="Pokemon to guess" 
+                className="w-64 h-64 object-contain mx-auto mb-4"
+              />
+              <div className="text-xl mb-4">
+                Time remaining: {countdown} seconds
+              </div>
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                {pokemon.options.map((option, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setSelectedOption(option)}
+                    className={`p-2 rounded ${
+                      selectedOption === option
+                        ? "bg-blue-500 text-white"
+                        : "bg-gray-200 hover:bg-gray-300"
+                    }`}
+                    disabled={hasGuessed || gameFinished}
+                  >
+                    {option}
+                  </button>
+                ))}
+              </div>
               {!hasGuessed && !gameFinished && (
-                <div>
-                  <input
-                    type="text"
-                    placeholder="Enter your guess"
-                    value={guess}
-                    onChange={(e) => setGuess(e.target.value)}
-                  />
-                  <button onClick={handleGuess}>Submit Guess</button>
-                </div>
+                <button
+                  onClick={handleGuess}
+                  className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+                  disabled={!selectedOption}
+                >
+                  Submit Guess
+                </button>
               )}
-              {gameFinished && <p>Game Over. Countdown: {countdown}</p>}
-            </>
-          )}
-        </>
+              <div className="mt-4">
+                <div>Score - Player 1: {score.player1}</div>
+                <div>Score - Player 2: {score.player2}</div>
+              </div>
+            </div>
+          ) : gameData?.status === "finished" ? (
+            <div>
+              <h2 className="text-2xl font-bold mb-4">Game Over!</h2>
+              <div className="text-xl mb-4">Final Scores:</div>
+              <div className="text-lg">
+                <div>Player 1: {gameData.finalScores.player1}</div>
+                <div>Player 2: {gameData.finalScores.player2}</div>
+              </div>
+              <div className="mt-4">
+                {gameData.finalScores.player1 > gameData.finalScores.player2
+                  ? "Player 1 wins!"
+                  : gameData.finalScores.player2 > gameData.finalScores.player1
+                  ? "Player 2 wins!"
+                  : "It's a tie!"}
+              </div>
+              <div className="mt-4">The game will be deleted in {countdown} seconds.</div>
+            </div>
+          ) : null}
+        </div>
       )}
     </div>
   );
