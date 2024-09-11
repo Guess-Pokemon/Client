@@ -92,26 +92,22 @@ const PokemonGuessingGame = () => {
 
   const joinExistingGame = async () => {
     const gameRef = ref(db, `games/${inputGameId}`);
-    try {
-      await runTransaction(gameRef, (currentData) => {
-        if (currentData === null) {
-          return { error: "Game does not exist" };
-        }
-        if (currentData.status !== "waiting" || currentData.player2.username) {
-          return { error: "Game already started or full" };
-        }
-        currentData.status = "ready";
-        currentData.player2.username = username;
-        currentData.roundStartTime = Date.now();
-        return currentData;
-      });
+    const snapshot = await get(gameRef);
+    const data = snapshot.val();
+
+    if (data && data.status === "waiting" && !data.player2.username) {
+      const roundStartTime = Date.now();
       localStorage.setItem("gameId", inputGameId);
+      await update(gameRef, {
+        status: "ready",
+        "player2/username": username,
+        roundStartTime,
+      });
       setGameId(inputGameId);
       setCurrentPlayer("player2");
       localStorage.setItem("role", "player2");
-    } catch (error) {
-      console.error("Failed to join game:", error);
-      alert("Failed to join game. Please try again.");
+    } else {
+      alert("Game not available or already started");
     }
     setInputGameId("");
   };
@@ -177,6 +173,67 @@ const PokemonGuessingGame = () => {
     }
   };
 
+  const handleEmptyGuess = async () => {
+    if (gameId && !hasGuessed) {
+      const gameRef = ref(db, `games/${gameId}`);
+      try {
+        await runTransaction(gameRef, (currentData) => {
+          if (currentData === null || currentData.status !== "ready") {
+            return;
+          }
+
+          // Set empty guess
+          currentData[currentPlayer].guess = "";
+          currentData[currentPlayer].timeTaken =
+            Date.now() - currentData.roundStartTime;
+
+          // Proceed with processing guesses
+          const correctAnswer =
+            currentData.currentPokemon.correct.name.toLowerCase();
+          const player1Correct =
+            currentData.player1.guess.toLowerCase() === correctAnswer;
+          const player2Correct =
+            currentData.player2.guess.toLowerCase() === correctAnswer;
+
+          currentData.player1.score += player1Correct ? 100 : 0;
+          currentData.player2.score += player2Correct ? 100 : 0;
+
+          if (currentData.currentRound >= 5) {
+            currentData.status = "finished";
+            currentData.finalScores = {
+              player1: currentData.player1.score,
+              player2: currentData.player2.score,
+            };
+          } else {
+            currentData.currentRound += 1;
+            currentData.roundStartTime = Date.now();
+            currentData.player1.guess = "";
+            currentData.player2.guess = "";
+            currentData.status = "nextRound";
+          }
+
+          return currentData;
+        });
+
+        setHasGuessed(true);
+        setSelectedOption("");
+
+        // If it's time for the next round, fetch new Pokemon
+        const updatedData = (await get(gameRef)).val();
+        if (updatedData.status === "nextRound") {
+          const newPokemonData = await fetchPokemon();
+          await update(gameRef, {
+            currentPokemon: newPokemonData,
+            status: "ready",
+            roundStartTime: Date.now(),
+          });
+        }
+      } catch (error) {
+        console.error("Failed to handle empty guess:", error);
+      }
+    }
+  };
+
   useEffect(() => {
     if (gameId) {
       const gameRef = ref(db, `games/${gameId}`);
@@ -228,7 +285,7 @@ const PokemonGuessingGame = () => {
 
         if (remainingTime <= 0) {
           clearInterval(timer);
-          progressToNextRound(gameData);
+          handleEmptyGuess();
         }
       }, 1000);
 
