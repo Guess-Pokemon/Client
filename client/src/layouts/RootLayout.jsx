@@ -5,7 +5,9 @@ export default function RootLayout() {
   return (
     <>
       <Navbar />
-      <div className={`container-2xl w-full mt-16 min-w-[524px]`}>
+      <div
+        className={`container-2xl w-full mt-16 min-w-[524px] min-h-screen overflow-y-auto`}
+      >
         <Outlet />
       </div>
     </>

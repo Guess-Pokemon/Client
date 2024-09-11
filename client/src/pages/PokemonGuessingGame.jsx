@@ -1,5 +1,13 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { ref, set, onValue, update, remove, get, runTransaction } from "firebase/database";
+import {
+  ref,
+  set,
+  onValue,
+  update,
+  remove,
+  get,
+  runTransaction,
+} from "firebase/database";
 import { db } from "../config/firebaseConfig";
 import { v4 as uuidv4 } from "uuid";
 import Loader from "../components/Loader";
@@ -122,17 +130,25 @@ const PokemonGuessingGame = () => {
       const gameRef = ref(db, `games/${gameId}`);
       try {
         await runTransaction(gameRef, (currentData) => {
-          if (currentData === null || currentData.status !== "ready" || currentData[currentPlayer].guess) {
+          if (
+            currentData === null ||
+            currentData.status !== "ready" ||
+            currentData[currentPlayer].guess
+          ) {
             return;
           }
-          
+
           currentData[currentPlayer].guess = selectedOption;
-          currentData[currentPlayer].timeTaken = Date.now() - currentData.roundStartTime;
+          currentData[currentPlayer].timeTaken =
+            Date.now() - currentData.roundStartTime;
 
           if (currentData.player1.guess && currentData.player2.guess) {
-            const correctAnswer = currentData.currentPokemon.correct.name.toLowerCase();
-            const player1Correct = currentData.player1.guess.toLowerCase() === correctAnswer;
-            const player2Correct = currentData.player2.guess.toLowerCase() === correctAnswer;
+            const correctAnswer =
+              currentData.currentPokemon.correct.name.toLowerCase();
+            const player1Correct =
+              currentData.player1.guess.toLowerCase() === correctAnswer;
+            const player2Correct =
+              currentData.player2.guess.toLowerCase() === correctAnswer;
 
             currentData.player1.score += player1Correct ? 100 : 0;
             currentData.player2.score += player2Correct ? 100 : 0;
@@ -161,10 +177,10 @@ const PokemonGuessingGame = () => {
         const updatedData = (await get(gameRef)).val();
         if (updatedData.status === "nextRound") {
           const newPokemonData = await fetchPokemon();
-          await update(gameRef, { 
+          await update(gameRef, {
             currentPokemon: newPokemonData,
             status: "ready",
-            roundStartTime: Date.now()
+            roundStartTime: Date.now(),
           });
         }
       } catch (error) {
@@ -240,7 +256,10 @@ const PokemonGuessingGame = () => {
         setGameData(data);
         setPokemon(data?.currentPokemon || { correct: {}, options: [] });
 
-        if (data?.currentPokemon && data.currentPokemon.correct.image !== currentImageSrc) {
+        if (
+          data?.currentPokemon &&
+          data.currentPokemon.correct.image !== currentImageSrc
+        ) {
           setImageLoading(true);
           try {
             await preloadImage(data.currentPokemon.correct.image);
@@ -262,13 +281,16 @@ const PokemonGuessingGame = () => {
         if (data?.status === "finished") {
           setGameFinished(true);
           setCountdown(10);
-          showEndGameAlert(data)
+          showEndGameAlert(data);
         } else if (data?.status === "ready") {
           setHasGuessed(data[currentPlayer]?.guess !== "");
           setCountdown(30);
 
-          if (data[currentPlayer]?.guess === "" && (data.player1.guess !== "" || data.player2.guess !== "")) {
-          const Toast = Swal.mixin({
+          if (
+            data[currentPlayer]?.guess === "" &&
+            (data.player1.guess !== "" || data.player2.guess !== "")
+          ) {
+            const Toast = Swal.mixin({
               toast: true,
               position: "top-end",
               showConfirmButton: false,
@@ -357,20 +379,20 @@ const PokemonGuessingGame = () => {
     navigator.clipboard.writeText(gameId);
     setIsCopied(true);
     const Toast = Swal.mixin({
-              toast: true,
-              position: "top-end",
-              showConfirmButton: false,
-              timer: 2000,
-              timerProgressBar: true,
-              didOpen: (toast) => {
-                toast.onmouseenter = Swal.stopTimer;
-                toast.onmouseleave = Swal.resumeTimer;
-              },
-            });
-            Toast.fire({
-              icon: "success",
-              title: "Game ID has been copied to clipboard.",
-            });
+      toast: true,
+      position: "top-end",
+      showConfirmButton: false,
+      timer: 2000,
+      timerProgressBar: true,
+      didOpen: (toast) => {
+        toast.onmouseenter = Swal.stopTimer;
+        toast.onmouseleave = Swal.resumeTimer;
+      },
+    });
+    Toast.fire({
+      icon: "success",
+      title: "Game ID has been copied to clipboard.",
+    });
     setTimeout(() => setIsCopied(false), 2000);
   };
 
@@ -379,41 +401,46 @@ const PokemonGuessingGame = () => {
     const player2Wins = data.finalScores.player2 > data.finalScores.player1;
     const isDraw = data.finalScores.player1 === data.finalScores.player2;
 
-    const winnerImage = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRJSXjCSs_Gaeq5JffAPcLx_jO9lQ2xyGkCvw&s';
-    const loserImage = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSy5QrEjvQ1XKDIGoLIMikTXibvbQ7IO7orKQ&s';
-    const drawImage = 'https://i.pinimg.com/736x/fe/92/e5/fe92e5f1db324cac2e036ab2af869e59.jpg'
+    const winnerImage =
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRJSXjCSs_Gaeq5JffAPcLx_jO9lQ2xyGkCvw&s";
+    const loserImage =
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSy5QrEjvQ1XKDIGoLIMikTXibvbQ7IO7orKQ&s";
+    const drawImage =
+      "https://i.pinimg.com/736x/fe/92/e5/fe92e5f1db324cac2e036ab2af869e59.jpg";
 
     if (isDraw) {
-    Swal.fire({
-      title: 'It\'s a Draw!',
-      imageUrl: drawImage,
-      imageAlt: 'Draw Image',
-      confirmButtonText: 'OK'
-    });
-  } else {
-    if (data.player1.username === username) {
       Swal.fire({
-        title: player1Wins ? 'You Win!' : 'You Lose!',
-        imageUrl: player1Wins ? winnerImage : loserImage,
-        imageAlt: 'Result Image',
-        confirmButtonText: 'OK'
+        title: "It's a Draw!",
+        imageUrl: drawImage,
+        imageAlt: "Draw Image",
+        confirmButtonText: "OK",
       });
-    }
+    } else {
+      if (data.player1.username === username) {
+        Swal.fire({
+          title: player1Wins ? "You Win!" : "You Lose!",
+          imageUrl: player1Wins ? winnerImage : loserImage,
+          imageAlt: "Result Image",
+          confirmButtonText: "OK",
+        });
+      }
 
-    if (data.player2.username === username) {
-      Swal.fire({
-        title: player2Wins ? 'You Win!' : 'You Lose!',
-        imageUrl: player2Wins ? winnerImage : loserImage,
-        imageAlt: 'Result Image',
-        confirmButtonText: 'OK'
-      });
+      if (data.player2.username === username) {
+        Swal.fire({
+          title: player2Wins ? "You Win!" : "You Lose!",
+          imageUrl: player2Wins ? winnerImage : loserImage,
+          imageAlt: "Result Image",
+          confirmButtonText: "OK",
+        });
+      }
     }
-  }
   };
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-5xl font-bold mb-8">Pokémon Guessing Game</h1>
+      <h1 className="text-5xl font-bold mb-8 dark:text-white">
+        Pokémon Guessing Game
+      </h1>
       {!gameId ? (
         <div className="space-y-4">
           <button
@@ -440,7 +467,7 @@ const PokemonGuessingGame = () => {
         </div>
       ) : (
         <div>
-          <div className="mb-4 text-xl">
+          <div className="mb-4 text-xl dark:text-white">
             Game ID: {gameId}
             <button
               onClick={handleCopy}
@@ -454,13 +481,13 @@ const PokemonGuessingGame = () => {
               <div className="my-5">
                 <Loader />
               </div>
-              <p className="font-bold text-2xl">
+              <p className="font-bold text-2xl dark:text-white">
                 Waiting for another player to join...
               </p>
             </div>
           ) : gameData?.status === "ready" ? (
             <div>
-              <h2 className="text-2xl font-bold mb-4">
+              <h2 className="text-2xl font-bold mb-4 dark:text-white">
                 Guess the Pokémon (Round {gameData.currentRound}/5)
               </h2>
               <div className="relative w-64 h-64 mx-auto mb-4">
@@ -470,7 +497,9 @@ const PokemonGuessingGame = () => {
                   </div>
                 )}
                 {imageError && (
-                  <p className="text-red-500 text-center">Error loading image. Please try again.</p>
+                  <p className="text-red-500 text-center dark:text-white">
+                    Error loading image. Please try again.
+                  </p>
                 )}
                 {!imageLoading && !imageError && (
                   <img
@@ -480,7 +509,7 @@ const PokemonGuessingGame = () => {
                   />
                 )}
               </div>
-              <div className="text-xl mb-4">
+              <div className="text-xl mb-4 dark:text-white">
                 Time remaining: {countdown} seconds
               </div>
               <div className="grid grid-cols-2 gap-4 mb-4">
@@ -509,19 +538,21 @@ const PokemonGuessingGame = () => {
                 </button>
               )}
               <div className="mt-4">
-                <div>
+                <div className="dark:text-white">
                   Score - {gameData?.player1?.username}: {score.player1}
                 </div>
-                <div>
+                <div className="dark:text-white">
                   Score - {gameData?.player2?.username}: {score.player2}
                 </div>
               </div>
             </div>
           ) : gameData?.status === "finished" ? (
             <div>
-              <h2 className="text-2xl font-bold mb-4">Game Over!</h2>
-              <div className="text-xl mb-4">Final Scores:</div>
-              <div className="text-lg">
+              <h2 className="text-2xl font-bold mb-4 dark:text-white">
+                Game Over!
+              </h2>
+              <div className="text-xl mb-4 dark:text-white">Final Scores:</div>
+              <div className="text-lg dark:text-white">
                 <div>
                   {gameData?.player1?.username}: {gameData.finalScores.player1}
                 </div>
@@ -529,14 +560,14 @@ const PokemonGuessingGame = () => {
                   {gameData?.player2?.username}: {gameData.finalScores.player2}
                 </div>
               </div>
-              <div className="mt-4">
+              <div className="mt-4 dark:text-white">
                 {gameData.finalScores.player1 > gameData.finalScores.player2
                   ? `${gameData?.player1?.username} wins!`
                   : gameData.finalScores.player2 > gameData.finalScores.player1
                   ? `${gameData?.player2?.username} wins!`
                   : "It's a tie!"}
               </div>
-              <div className="mt-4">
+              <div className="mt-4 dark:text-white">
                 The game will be deleted in {countdown} seconds.
               </div>
             </div>

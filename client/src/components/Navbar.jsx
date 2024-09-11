@@ -1,4 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
+import DarkModeToggle from "./DarkModeToggle";
 
 export default function Navbar() {
   const navigate = useNavigate();
@@ -25,6 +26,7 @@ export default function Navbar() {
         </div>
 
         <div className="flex items-center space-x-3 md:space-x-0 rtl:space-x-reverse">
+          <DarkModeToggle />
           {localStorage.getItem("username") && (
             <button
               type="button"
