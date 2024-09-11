@@ -1,14 +1,13 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-const Login = ({ setIsLoggedIn }) => {
+const Login = () => {
     const [username, setUsername] = useState("");
     const navigate = useNavigate();
 
     const handleLogin = () => {
         if (username.trim()) {
             localStorage.setItem("username", username);
-            setIsLoggedIn(true);
             navigate("/");
         } else {
             alert("Please enter a username.");
