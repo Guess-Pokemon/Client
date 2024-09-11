@@ -1,197 +1,1019 @@
 import { useDarkMode } from "../context/DarkModeContext";
-import "./DarkModeToggle.css";
+import styled from "styled-components";
 
-export default function DarkModeToggle() {
+const Switch = () => {
   const { darkMode, setDarkMode } = useDarkMode();
 
   return (
-    <div>
-      <label id="theme-toggle-button">
+    <StyledWrapper>
+      <label className="bb8-toggle">
         <input
+          className="bb8-toggle__checkbox"
           type="checkbox"
-          id="toggle"
           checked={darkMode}
           onChange={() => setDarkMode(!darkMode)}
         />
-        <svg
-          viewBox="0 0 69.667 44"
-          xmlnsXlink="http://www.w3.org/1999/xlink"
-          xmlns="http://www.w3.org/2000/svg"
-          className="w-32 h-9 mb-6"
-        >
-          <g
-            transform="translate(3.5 3.5)"
-            data-name="Component 15 – 1"
-            id="Component_15_1"
-          >
-            <g
-              filter="url(#container)"
-              transform="matrix(1, 0, 0, 1, -3.5, -3.5)"
-            >
-              <rect
-                fill="#83cbd8"
-                transform="translate(3.5 3.5)"
-                rx="17.5"
-                height={35}
-                width="60.667"
-                data-name="container"
-                id="container"
-              />
-            </g>
-            <g transform="translate(2.333 2.333)" id="button">
-              <g data-name="sun" id="sun">
-                <g
-                  filter="url(#sun-outer)"
-                  transform="matrix(1, 0, 0, 1, -5.83, -5.83)"
-                >
-                  <circle
-                    fill="#f8e664"
-                    transform="translate(5.83 5.83)"
-                    r="15.167"
-                    cy="15.167"
-                    cx="15.167"
-                    data-name="sun-outer"
-                    id="sun-outer-2"
-                  />
-                </g>
-                <g
-                  filter="url(#sun)"
-                  transform="matrix(1, 0, 0, 1, -5.83, -5.83)"
-                >
-                  <path
-                    fill="rgba(246,254,247,0.29)"
-                    transform="translate(9.33 9.33)"
-                    d="M11.667,0A11.667,11.667,0,1,1,0,11.667,11.667,11.667,0,0,1,11.667,0Z"
-                    data-name="sun"
-                    id="sun-3"
-                  />
-                </g>
-                <circle
-                  fill="#fcf4b9"
-                  transform="translate(8.167 8.167)"
-                  r={7}
-                  cy={7}
-                  cx={7}
-                  id="sun-inner"
-                />
-              </g>
-              <g data-name="moon" id="moon">
-                <g
-                  filter="url(#moon)"
-                  transform="matrix(1, 0, 0, 1, -31.5, -5.83)"
-                >
-                  <circle
-                    fill="#cce6ee"
-                    transform="translate(31.5 5.83)"
-                    r="15.167"
-                    cy="15.167"
-                    cx="15.167"
-                    data-name="moon"
-                    id="moon-3"
-                  />
-                </g>
-                <g
-                  fill="#a6cad0"
-                  transform="translate(-24.415 -1.009)"
-                  id="patches"
-                >
-                  <circle
-                    transform="translate(43.009 4.496)"
-                    r={2}
-                    cy={2}
-                    cx={2}
-                  />
-                  <circle
-                    transform="translate(39.366 17.952)"
-                    r={2}
-                    cy={2}
-                    cx={2}
-                    data-name="patch"
-                  />
-                  <circle
-                    transform="translate(33.016 8.044)"
-                    r={1}
-                    cy={1}
-                    cx={1}
-                    data-name="patch"
-                  />
-                  <circle
-                    transform="translate(51.081 18.888)"
-                    r={1}
-                    cy={1}
-                    cx={1}
-                    data-name="patch"
-                  />
-                  <circle
-                    transform="translate(33.016 22.503)"
-                    r={1}
-                    cy={1}
-                    cx={1}
-                    data-name="patch"
-                  />
-                  <circle
-                    transform="translate(50.081 10.53)"
-                    r="1.5"
-                    cy="1.5"
-                    cx="1.5"
-                    data-name="patch"
-                  />
-                </g>
-              </g>
-            </g>
-            <g filter="url(#cloud)" transform="matrix(1, 0, 0, 1, -3.5, -3.5)">
-              <path
-                fill="#fff"
-                transform="translate(-3466.47 -160.94)"
-                d="M3512.81,173.815a4.463,4.463,0,0,1,2.243.62.95.95,0,0,1,.72-1.281,4.852,4.852,0,0,1,2.623.519c.034.02-.5-1.968.281-2.716a2.117,2.117,0,0,1,2.829-.274,1.821,1.821,0,0,1,.854,1.858c.063.037,2.594-.049,3.285,1.273s-.865,2.544-.807,2.626a12.192,12.192,0,0,1,2.278.892c.553.448,1.106,1.992-1.62,2.927a7.742,7.742,0,0,1-3.762-.3c-1.28-.49-1.181-2.65-1.137-2.624s-1.417,2.2-2.623,2.2a4.172,4.172,0,0,1-2.394-1.206,3.825,3.825,0,0,1-2.771.774c-3.429-.46-2.333-3.267-2.2-3.55A3.721,3.721,0,0,1,3512.81,173.815Z"
-                data-name="cloud"
-                id="cloud"
-              />
-            </g>
-            <g fill="#def8ff" transform="translate(3.585 1.325)" id="stars">
-              <path
-                transform="matrix(-1, 0.017, -0.017, -1, 24.231, 3.055)"
-                d="M.774,0,.566.559,0,.539.458.933.25,1.492l.485-.361.458.394L1.024.953,1.509.592.943.572Z"
-              />
-              <path
-                transform="matrix(-0.777, 0.629, -0.629, -0.777, 23.185, 12.358)"
-                d="M1.341.529.836.472.736,0,.505.46,0,.4.4.729l-.231.46L.605.932l.4.326L.9.786Z"
-                data-name="star"
-              />
-              <path
-                transform="matrix(0.438, 0.899, -0.899, 0.438, 23.177, 29.735)"
-                d="M.015,1.065.475.9l.285.365L.766.772l.46-.164L.745.494.751,0,.481.407,0,.293.285.658Z"
-                data-name="star"
-              />
-              <path
-                transform="translate(12.677 0.388) rotate(104)"
-                d="M1.161,1.6,1.059,1,1.574.722.962.607.86,0,.613.572,0,.457.446.881.2,1.454l.516-.274Z"
-                data-name="star"
-              />
-              <path
-                transform="matrix(-0.07, 0.998, -0.998, -0.07, 11.066, 15.457)"
-                d="M.873,1.648l.114-.62L1.579.945,1.03.62,1.144,0,.706.464.157.139.438.7,0,1.167l.592-.083Z"
-                data-name="star"
-              />
-              <path
-                transform="translate(8.326 28.061) rotate(11)"
-                d="M.593,0,.638.724,0,.982l.7.211.045.724.36-.64.7.211L1.342.935,1.7.294,1.063.552Z"
-                data-name="star"
-              />
-              <path
-                transform="translate(5.012 5.962) rotate(172)"
-                d="M.816,0,.5.455,0,.311.323.767l-.312.455.516-.215.323.456L.827.911,1.343.7.839.552Z"
-                data-name="star"
-              />
-              <path
-                transform="translate(2.218 14.616) rotate(169)"
-                d="M1.261,0,.774.571.114.3.487.967,0,1.538.728,1.32l.372.662.047-.749.728-.218L1.215.749Z"
-                data-name="star"
-              />
-            </g>
-          </g>
-        </svg>
+        <div className="bb8-toggle__container">
+          <div className="bb8-toggle__scenery">
+            <div className="bb8-toggle__star" />
+            <div className="bb8-toggle__star" />
+            <div className="bb8-toggle__star" />
+            <div className="bb8-toggle__star" />
+            <div className="bb8-toggle__star" />
+            <div className="bb8-toggle__star" />
+            <div className="bb8-toggle__star" />
+            <div className="tatto-1" />
+            <div className="tatto-2" />
+            <div className="gomrassen" />
+            <div className="hermes" />
+            <div className="chenini" />
+            <div className="bb8-toggle__cloud" />
+            <div className="bb8-toggle__cloud" />
+            <div className="bb8-toggle__cloud" />
+          </div>
+          <div className="bb8">
+            <div className="bb8__head-container">
+              <div className="bb8__antenna" />
+              <div className="bb8__antenna" />
+              <div className="bb8__head" />
+            </div>
+            <div className="bb8__body" />
+          </div>
+          <div className="artificial__hidden">
+            <div className="bb8__shadow" />
+          </div>
+        </div>
       </label>
-    </div>
+    </StyledWrapper>
   );
-}
+};
+
+const StyledWrapper = styled.div`
+  /* REMASTERED */
+  /* RTX-ON */
+  /* completely redone toggle and droid */
+
+  .bb8-toggle {
+    --toggle-size: 8px;
+    /* finally I removed the scale now everything depends on the font-size */
+    /* --margin-top-for-head: 1.75em; */
+    /* it's just in case 👆 */
+    --toggle-width: 10.625em;
+    --toggle-height: 5.625em;
+    --toggle-offset: calc((var(--toggle-height) - var(--bb8-diameter)) / 2);
+    --toggle-bg: linear-gradient(#2c4770, #070e2b 35%, #628cac 50% 70%, #a6c5d4)
+      no-repeat;
+    --bb8-diameter: 4.375em;
+    --radius: 99em;
+    --transition: 0.4s;
+    --accent: #de7d2f;
+    --bb8-bg: #fff;
+  }
+
+  .bb8-toggle,
+  .bb8-toggle *,
+  .bb8-toggle *::before,
+  .bb8-toggle *::after {
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+  }
+
+  .bb8-toggle {
+    cursor: pointer;
+    margin-top: var(--margin-top-for-head);
+    font-size: var(--toggle-size);
+  }
+
+  .bb8-toggle__checkbox {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    display: none;
+  }
+
+  .bb8-toggle__container {
+    width: var(--toggle-width);
+    height: var(--toggle-height);
+    background: var(--toggle-bg);
+    background-size: 100% 11.25em;
+    background-position-y: -5.625em;
+    border-radius: var(--radius);
+    position: relative;
+    -webkit-transition: var(--transition);
+    -o-transition: var(--transition);
+    transition: var(--transition);
+  }
+
+  .bb8 {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    -ms-flex-direction: column;
+    flex-direction: column;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    position: absolute;
+    top: calc(var(--toggle-offset) - 1.688em + 0.188em);
+    left: var(--toggle-offset);
+    -webkit-transition: var(--transition);
+    -o-transition: var(--transition);
+    transition: var(--transition);
+    z-index: 2;
+  }
+
+  .bb8__head-container {
+    position: relative;
+    -webkit-transition: var(--transition);
+    -o-transition: var(--transition);
+    transition: var(--transition);
+    z-index: 2;
+    -webkit-transform-origin: 1.25em 3.75em;
+    -ms-transform-origin: 1.25em 3.75em;
+    transform-origin: 1.25em 3.75em;
+  }
+
+  .bb8__head {
+    overflow: hidden;
+    margin-bottom: -0.188em;
+    width: 2.5em;
+    height: 1.688em;
+    background: -o-linear-gradient(
+        transparent 0.063em,
+        dimgray 0.063em 0.313em,
+        transparent 0.313em 0.375em,
+        var(--accent) 0.375em 0.5em,
+        transparent 0.5em 1.313em,
+        silver 1.313em 1.438em,
+        transparent 1.438em
+      ),
+      -o-linear-gradient(45deg, transparent 0.188em, var(--bb8-bg) 0.188em
+            1.25em, transparent 1.25em),
+      -o-linear-gradient(135deg, transparent 0.188em, var(--bb8-bg) 0.188em
+            1.25em, transparent 1.25em),
+      -o-linear-gradient(var(--bb8-bg) 1.25em, transparent 1.25em);
+    background: -o-linear-gradient(
+        transparent 0.063em,
+        dimgray 0.063em 0.313em,
+        transparent 0.313em 0.375em,
+        var(--accent) 0.375em 0.5em,
+        transparent 0.5em 1.313em,
+        silver 1.313em 1.438em,
+        transparent 1.438em
+      ),
+      -o-linear-gradient(45deg, transparent 0.188em, var(--bb8-bg) 0.188em
+            1.25em, transparent 1.25em),
+      -o-linear-gradient(135deg, transparent 0.188em, var(--bb8-bg) 0.188em
+            1.25em, transparent 1.25em),
+      -o-linear-gradient(var(--bb8-bg) 1.25em, transparent 1.25em);
+    background: -o-linear-gradient(
+        transparent 0.063em,
+        dimgray 0.063em 0.313em,
+        transparent 0.313em 0.375em,
+        var(--accent) 0.375em 0.5em,
+        transparent 0.5em 1.313em,
+        silver 1.313em 1.438em,
+        transparent 1.438em
+      ),
+      -o-linear-gradient(45deg, transparent 0.188em, var(--bb8-bg) 0.188em
+            1.25em, transparent 1.25em),
+      -o-linear-gradient(135deg, transparent 0.188em, var(--bb8-bg) 0.188em
+            1.25em, transparent 1.25em),
+      -o-linear-gradient(var(--bb8-bg) 1.25em, transparent 1.25em);
+    background: -o-linear-gradient(
+        transparent 0.063em,
+        dimgray 0.063em 0.313em,
+        transparent 0.313em 0.375em,
+        var(--accent) 0.375em 0.5em,
+        transparent 0.5em 1.313em,
+        silver 1.313em 1.438em,
+        transparent 1.438em
+      ),
+      -o-linear-gradient(45deg, transparent 0.188em, var(--bb8-bg) 0.188em
+            1.25em, transparent 1.25em),
+      -o-linear-gradient(135deg, transparent 0.188em, var(--bb8-bg) 0.188em
+            1.25em, transparent 1.25em),
+      -o-linear-gradient(var(--bb8-bg) 1.25em, transparent 1.25em);
+    background: linear-gradient(
+        transparent 0.063em,
+        dimgray 0.063em 0.313em,
+        transparent 0.313em 0.375em,
+        var(--accent) 0.375em 0.5em,
+        transparent 0.5em 1.313em,
+        silver 1.313em 1.438em,
+        transparent 1.438em
+      ),
+      linear-gradient(
+        45deg,
+        transparent 0.188em,
+        var(--bb8-bg) 0.188em 1.25em,
+        transparent 1.25em
+      ),
+      linear-gradient(
+        -45deg,
+        transparent 0.188em,
+        var(--bb8-bg) 0.188em 1.25em,
+        transparent 1.25em
+      ),
+      linear-gradient(var(--bb8-bg) 1.25em, transparent 1.25em);
+    border-radius: var(--radius) var(--radius) 0 0;
+    position: relative;
+    z-index: 1;
+    -webkit-filter: drop-shadow(0 0.063em 0.125em gray);
+    filter: drop-shadow(0 0.063em 0.125em gray);
+  }
+
+  .bb8__head::before {
+    content: "";
+    position: absolute;
+    width: 0.563em;
+    height: 0.563em;
+    background: -o-radial-gradient(
+        0.25em 0.375em,
+        0.125em circle,
+        red,
+        transparent
+      ),
+      -o-radial-gradient(0.375em 0.188em, 0.063em circle, var(--bb8-bg) 50%, transparent
+            100%),
+      -o-linear-gradient(45deg, #000 0.188em, dimgray 0.313em 0.375em, #000
+            0.5em);
+    background: -o-radial-gradient(
+        0.25em 0.375em,
+        0.125em circle,
+        red,
+        transparent
+      ),
+      -o-radial-gradient(0.375em 0.188em, 0.063em circle, var(--bb8-bg) 50%, transparent
+            100%),
+      -o-linear-gradient(45deg, #000 0.188em, dimgray 0.313em 0.375em, #000
+            0.5em);
+    background: -o-radial-gradient(
+        0.25em 0.375em,
+        0.125em circle,
+        red,
+        transparent
+      ),
+      -o-radial-gradient(0.375em 0.188em, 0.063em circle, var(--bb8-bg) 50%, transparent
+            100%),
+      -o-linear-gradient(45deg, #000 0.188em, dimgray 0.313em 0.375em, #000
+            0.5em);
+    background: -o-radial-gradient(
+        0.25em 0.375em,
+        0.125em circle,
+        red,
+        transparent
+      ),
+      -o-radial-gradient(0.375em 0.188em, 0.063em circle, var(--bb8-bg) 50%, transparent
+            100%),
+      -o-linear-gradient(45deg, #000 0.188em, dimgray 0.313em 0.375em, #000
+            0.5em);
+    background: radial-gradient(
+        0.125em circle at 0.25em 0.375em,
+        red,
+        transparent
+      ),
+      radial-gradient(
+        0.063em circle at 0.375em 0.188em,
+        var(--bb8-bg) 50%,
+        transparent 100%
+      ),
+      linear-gradient(45deg, #000 0.188em, dimgray 0.313em 0.375em, #000 0.5em);
+    border-radius: var(--radius);
+    top: 0.413em;
+    left: 50%;
+    -webkit-transform: translate(-50%);
+    -ms-transform: translate(-50%);
+    transform: translate(-50%);
+    -webkit-box-shadow: 0 0 0 0.089em lightgray, 0.563em 0.281em 0 -0.148em,
+      0.563em 0.281em 0 -0.1em var(--bb8-bg), 0.563em 0.281em 0 -0.063em;
+    box-shadow: 0 0 0 0.089em lightgray, 0.563em 0.281em 0 -0.148em,
+      0.563em 0.281em 0 -0.1em var(--bb8-bg), 0.563em 0.281em 0 -0.063em;
+    z-index: 1;
+    -webkit-transition: var(--transition);
+    -o-transition: var(--transition);
+    transition: var(--transition);
+  }
+
+  .bb8__head::after {
+    content: "";
+    position: absolute;
+    bottom: 0.375em;
+    left: 0;
+    width: 100%;
+    height: 0.188em;
+    background: -o-linear-gradient(
+      left,
+      var(--accent) 0.125em,
+      transparent 0.125em 0.188em,
+      var(--accent) 0.188em 0.313em,
+      transparent 0.313em 0.375em,
+      var(--accent) 0.375em 0.938em,
+      transparent 0.938em 1em,
+      var(--accent) 1em 1.125em,
+      transparent 1.125em 1.875em,
+      var(--accent) 1.875em 2em,
+      transparent 2em 2.063em,
+      var(--accent) 2.063em 2.25em,
+      transparent 2.25em 2.313em,
+      var(--accent) 2.313em 2.375em,
+      transparent 2.375em 2.438em,
+      var(--accent) 2.438em
+    );
+    background: -webkit-gradient(
+      linear,
+      left top,
+      right top,
+      color-stop(0.125em, var(--accent)),
+      color-stop(0.125em, transparent),
+      color-stop(0.188em, var(--accent)),
+      color-stop(0.313em, transparent),
+      color-stop(0.375em, var(--accent)),
+      color-stop(0.938em, transparent),
+      color-stop(1em, var(--accent)),
+      color-stop(1.125em, transparent),
+      color-stop(1.875em, var(--accent)),
+      color-stop(2em, transparent),
+      color-stop(2.063em, var(--accent)),
+      color-stop(2.25em, transparent),
+      color-stop(2.313em, var(--accent)),
+      color-stop(2.375em, transparent),
+      color-stop(2.438em, var(--accent))
+    );
+    background: linear-gradient(
+      to right,
+      var(--accent) 0.125em,
+      transparent 0.125em 0.188em,
+      var(--accent) 0.188em 0.313em,
+      transparent 0.313em 0.375em,
+      var(--accent) 0.375em 0.938em,
+      transparent 0.938em 1em,
+      var(--accent) 1em 1.125em,
+      transparent 1.125em 1.875em,
+      var(--accent) 1.875em 2em,
+      transparent 2em 2.063em,
+      var(--accent) 2.063em 2.25em,
+      transparent 2.25em 2.313em,
+      var(--accent) 2.313em 2.375em,
+      transparent 2.375em 2.438em,
+      var(--accent) 2.438em
+    );
+    -webkit-transition: var(--transition);
+    -o-transition: var(--transition);
+    transition: var(--transition);
+  }
+
+  .bb8__antenna {
+    position: absolute;
+    -webkit-transform: translateY(-90%);
+    -ms-transform: translateY(-90%);
+    transform: translateY(-90%);
+    width: 0.059em;
+    border-radius: var(--radius) var(--radius) 0 0;
+    -webkit-transition: var(--transition);
+    -o-transition: var(--transition);
+    transition: var(--transition);
+  }
+
+  .bb8__antenna:nth-child(1) {
+    height: 0.938em;
+    right: 0.938em;
+    background: -o-linear-gradient(#000 0.188em, silver 0.188em);
+    background: -webkit-gradient(
+      linear,
+      left top,
+      left bottom,
+      color-stop(0.188em, #000),
+      color-stop(0.188em, silver)
+    );
+    background: linear-gradient(#000 0.188em, silver 0.188em);
+  }
+
+  .bb8__antenna:nth-child(2) {
+    height: 0.375em;
+    left: 50%;
+    -webkit-transform: translate(-50%, -90%);
+    -ms-transform: translate(-50%, -90%);
+    transform: translate(-50%, -90%);
+    background: silver;
+  }
+
+  .bb8__body {
+    width: 4.375em;
+    height: 4.375em;
+    background: var(--bb8-bg);
+    border-radius: var(--radius);
+    position: relative;
+    overflow: hidden;
+    -webkit-transition: var(--transition);
+    -o-transition: var(--transition);
+    transition: var(--transition);
+    z-index: 1;
+    -webkit-transform: rotate(45deg);
+    -ms-transform: rotate(45deg);
+    transform: rotate(45deg);
+    background: -webkit-gradient(
+        linear,
+        right top,
+        left top,
+        color-stop(4%, var(--bb8-bg)),
+        color-stop(4%, var(--accent)),
+        color-stop(10%, transparent),
+        color-stop(90%, var(--accent)),
+        color-stop(96%, var(--bb8-bg))
+      ),
+      -webkit-gradient(linear, left top, left bottom, color-stop(4%, var(--bb8-bg)), color-stop(4%, var(--accent)), color-stop(10%, transparent), color-stop(90%, var(--accent)), color-stop(96%, var(--bb8-bg))),
+      -webkit-gradient(linear, left top, right top, color-stop(2.156em, transparent), color-stop(2.156em, silver), color-stop(2.188em, transparent)),
+      -webkit-gradient(linear, left top, left bottom, color-stop(2.156em, transparent), color-stop(2.156em, silver), color-stop(2.188em, transparent));
+    background: -o-linear-gradient(
+        right,
+        var(--bb8-bg) 4%,
+        var(--accent) 4% 10%,
+        transparent 10% 90%,
+        var(--accent) 90% 96%,
+        var(--bb8-bg) 96%
+      ),
+      -o-linear-gradient(var(--bb8-bg) 4%, var(--accent) 4% 10%, transparent 10%
+            90%, var(--accent) 90% 96%, var(--bb8-bg) 96%),
+      -o-linear-gradient(left, transparent 2.156em, silver 2.156em 2.219em, transparent
+            2.188em),
+      -o-linear-gradient(transparent 2.156em, silver 2.156em 2.219em, transparent
+            2.188em);
+    background: linear-gradient(
+        -90deg,
+        var(--bb8-bg) 4%,
+        var(--accent) 4% 10%,
+        transparent 10% 90%,
+        var(--accent) 90% 96%,
+        var(--bb8-bg) 96%
+      ),
+      linear-gradient(
+        var(--bb8-bg) 4%,
+        var(--accent) 4% 10%,
+        transparent 10% 90%,
+        var(--accent) 90% 96%,
+        var(--bb8-bg) 96%
+      ),
+      linear-gradient(
+        to right,
+        transparent 2.156em,
+        silver 2.156em 2.219em,
+        transparent 2.188em
+      ),
+      linear-gradient(
+        transparent 2.156em,
+        silver 2.156em 2.219em,
+        transparent 2.188em
+      );
+    background-color: var(--bb8-bg);
+  }
+
+  .bb8__body::after {
+    content: "";
+    bottom: 1.5em;
+    left: 0.563em;
+    position: absolute;
+    width: 0.188em;
+    height: 0.188em;
+    background: rgb(236, 236, 236);
+    color: rgb(236, 236, 236);
+    border-radius: 50%;
+    -webkit-box-shadow: 0.875em 0.938em, 0 -1.25em, 0.875em -2.125em,
+      2.125em -2.125em, 3.063em -1.25em, 3.063em 0, 2.125em 0.938em;
+    box-shadow: 0.875em 0.938em, 0 -1.25em, 0.875em -2.125em, 2.125em -2.125em,
+      3.063em -1.25em, 3.063em 0, 2.125em 0.938em;
+  }
+
+  .bb8__body::before {
+    content: "";
+    width: 2.625em;
+    height: 2.625em;
+    position: absolute;
+    border-radius: 50%;
+    z-index: 0.1;
+    overflow: hidden;
+    top: 50%;
+    left: 50%;
+    -webkit-transform: translate(-50%, -50%);
+    -ms-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+    border: 0.313em solid var(--accent);
+    background: -o-radial-gradient(
+        center,
+        1em circle,
+        rgb(236, 236, 236) 50%,
+        transparent 51%
+      ),
+      -o-radial-gradient(center, 1.25em circle, var(--bb8-bg) 50%, transparent
+            51%),
+      -o-linear-gradient(right, transparent 42%, var(--accent) 42% 58%, transparent
+            58%),
+      -o-linear-gradient(var(--bb8-bg) 42%, var(--accent) 42% 58%, var(--bb8-bg)
+            58%);
+    background: -o-radial-gradient(
+        center,
+        1em circle,
+        rgb(236, 236, 236) 50%,
+        transparent 51%
+      ),
+      -o-radial-gradient(center, 1.25em circle, var(--bb8-bg) 50%, transparent
+            51%),
+      -o-linear-gradient(right, transparent 42%, var(--accent) 42% 58%, transparent
+            58%),
+      -o-linear-gradient(var(--bb8-bg) 42%, var(--accent) 42% 58%, var(--bb8-bg)
+            58%);
+    background: radial-gradient(
+        1em circle at center,
+        rgb(236, 236, 236) 50%,
+        transparent 51%
+      ),
+      radial-gradient(
+        1.25em circle at center,
+        var(--bb8-bg) 50%,
+        transparent 51%
+      ),
+      -webkit-gradient(linear, right top, left top, color-stop(42%, transparent), color-stop(42%, var(--accent)), color-stop(58%, transparent)),
+      -webkit-gradient(linear, left top, left bottom, color-stop(42%, var(--bb8-bg)), color-stop(42%, var(--accent)), color-stop(58%, var(--bb8-bg)));
+    background: radial-gradient(
+        1em circle at center,
+        rgb(236, 236, 236) 50%,
+        transparent 51%
+      ),
+      radial-gradient(
+        1.25em circle at center,
+        var(--bb8-bg) 50%,
+        transparent 51%
+      ),
+      linear-gradient(
+        -90deg,
+        transparent 42%,
+        var(--accent) 42% 58%,
+        transparent 58%
+      ),
+      linear-gradient(
+        var(--bb8-bg) 42%,
+        var(--accent) 42% 58%,
+        var(--bb8-bg) 58%
+      );
+  }
+
+  .artificial__hidden {
+    position: absolute;
+    border-radius: inherit;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  .bb8__shadow {
+    content: "";
+    width: var(--bb8-diameter);
+    height: 20%;
+    border-radius: 50%;
+    background: #3a271c;
+    -webkit-box-shadow: 0.313em 0 3.125em #3a271c;
+    box-shadow: 0.313em 0 3.125em #3a271c;
+    opacity: 0.25;
+    position: absolute;
+    bottom: 0;
+    left: calc(var(--toggle-offset) - 0.938em);
+    -webkit-transition: var(--transition);
+    -o-transition: var(--transition);
+    transition: var(--transition);
+    -webkit-transform: skew(-70deg);
+    -ms-transform: skew(-70deg);
+    transform: skew(-70deg);
+    z-index: 1;
+  }
+
+  .bb8-toggle__scenery {
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    overflow: hidden;
+    position: relative;
+    border-radius: inherit;
+  }
+
+  .bb8-toggle__scenery::before {
+    content: "";
+    position: absolute;
+    width: 100%;
+    height: 30%;
+    bottom: 0;
+    background: #b18d71;
+    z-index: 1;
+  }
+
+  .bb8-toggle__cloud {
+    z-index: 1;
+    position: absolute;
+    border-radius: 50%;
+  }
+
+  .bb8-toggle__cloud:nth-last-child(1) {
+    width: 0.875em;
+    height: 0.625em;
+    -webkit-filter: blur(0.125em) drop-shadow(0.313em 0.313em #ffffffae)
+      drop-shadow(-0.625em 0 #fff) drop-shadow(-0.938em -0.125em #fff);
+    filter: blur(0.125em) drop-shadow(0.313em 0.313em #ffffffae)
+      drop-shadow(-0.625em 0 #fff) drop-shadow(-0.938em -0.125em #fff);
+    right: 1.875em;
+    top: 2.813em;
+    background: -o-linear-gradient(bottom left, #ffffffae, #ffffffae);
+    background: -webkit-gradient(
+      linear,
+      left bottom,
+      right top,
+      from(#ffffffae),
+      to(#ffffffae)
+    );
+    background: linear-gradient(to top right, #ffffffae, #ffffffae);
+    -webkit-transition: var(--transition);
+    -o-transition: var(--transition);
+    transition: var(--transition);
+  }
+
+  .bb8-toggle__cloud:nth-last-child(2) {
+    top: 0.625em;
+    right: 4.375em;
+    width: 0.875em;
+    height: 0.375em;
+    background: #dfdedeae;
+    -webkit-filter: blur(0.125em) drop-shadow(-0.313em -0.188em #e0dfdfae)
+      drop-shadow(-0.625em -0.188em #bbbbbbae)
+      drop-shadow(-1em 0.063em #cfcfcfae);
+    filter: blur(0.125em) drop-shadow(-0.313em -0.188em #e0dfdfae)
+      drop-shadow(-0.625em -0.188em #bbbbbbae)
+      drop-shadow(-1em 0.063em #cfcfcfae);
+    -webkit-transition: 0.6s;
+    -o-transition: 0.6s;
+    transition: 0.6s;
+  }
+
+  .bb8-toggle__cloud:nth-last-child(3) {
+    top: 1.25em;
+    right: 0.938em;
+    width: 0.875em;
+    height: 0.375em;
+    background: #ffffffae;
+    -webkit-filter: blur(0.125em) drop-shadow(0.438em 0.188em #ffffffae)
+      drop-shadow(-0.625em 0.313em #ffffffae);
+    filter: blur(0.125em) drop-shadow(0.438em 0.188em #ffffffae)
+      drop-shadow(-0.625em 0.313em #ffffffae);
+    -webkit-transition: 0.8s;
+    -o-transition: 0.8s;
+    transition: 0.8s;
+  }
+
+  .gomrassen,
+  .hermes,
+  .chenini {
+    position: absolute;
+    border-radius: var(--radius);
+    background: -o-linear-gradient(#fff, #6e8ea2);
+    background: -webkit-gradient(
+      linear,
+      left top,
+      left bottom,
+      from(#fff),
+      to(#6e8ea2)
+    );
+    background: linear-gradient(#fff, #6e8ea2);
+    top: 100%;
+  }
+
+  .gomrassen {
+    left: 0.938em;
+    width: 1.875em;
+    height: 1.875em;
+    -webkit-box-shadow: 0 0 0.188em #ffffff52, 0 0 0.188em #6e8ea24b;
+    box-shadow: 0 0 0.188em #ffffff52, 0 0 0.188em #6e8ea24b;
+    -webkit-transition: var(--transition);
+    -o-transition: var(--transition);
+    transition: var(--transition);
+  }
+
+  .gomrassen::before,
+  .gomrassen::after {
+    content: "";
+    position: absolute;
+    border-radius: inherit;
+    -webkit-box-shadow: inset 0 0 0.063em rgb(140, 162, 169);
+    box-shadow: inset 0 0 0.063em rgb(140, 162, 169);
+    background: rgb(184, 196, 200);
+  }
+
+  .gomrassen::before {
+    left: 0.313em;
+    top: 0.313em;
+    width: 0.438em;
+    height: 0.438em;
+  }
+
+  .gomrassen::after {
+    width: 0.25em;
+    height: 0.25em;
+    left: 1.25em;
+    top: 0.75em;
+  }
+
+  .hermes {
+    left: 3.438em;
+    width: 0.625em;
+    height: 0.625em;
+    -webkit-box-shadow: 0 0 0.125em #ffffff52, 0 0 0.125em #6e8ea24b;
+    box-shadow: 0 0 0.125em #ffffff52, 0 0 0.125em #6e8ea24b;
+    -webkit-transition: 0.6s;
+    -o-transition: 0.6s;
+    transition: 0.6s;
+  }
+
+  .chenini {
+    left: 4.375em;
+    width: 0.5em;
+    height: 0.5em;
+    -webkit-box-shadow: 0 0 0.125em #ffffff52, 0 0 0.125em #6e8ea24b;
+    box-shadow: 0 0 0.125em #ffffff52, 0 0 0.125em #6e8ea24b;
+    -webkit-transition: 0.8s;
+    -o-transition: 0.8s;
+    transition: 0.8s;
+  }
+
+  .tatto-1,
+  .tatto-2 {
+    position: absolute;
+    width: 1.25em;
+    height: 1.25em;
+    border-radius: var(--radius);
+  }
+
+  .tatto-1 {
+    background: #fefefe;
+    right: 3.125em;
+    top: 0.625em;
+    -webkit-box-shadow: 0 0 0.438em #fdf4e1;
+    box-shadow: 0 0 0.438em #fdf4e1;
+    -webkit-transition: var(--transition);
+    -o-transition: var(--transition);
+    transition: var(--transition);
+  }
+
+  .tatto-2 {
+    background: -o-linear-gradient(#e6ac5c, #d75449);
+    background: -webkit-gradient(
+      linear,
+      left top,
+      left bottom,
+      from(#e6ac5c),
+      to(#d75449)
+    );
+    background: linear-gradient(#e6ac5c, #d75449);
+    right: 1.25em;
+    top: 2.188em;
+    -webkit-box-shadow: 0 0 0.438em #e6ad5c3d, 0 0 0.438em #d755494f;
+    box-shadow: 0 0 0.438em #e6ad5c3d, 0 0 0.438em #d755494f;
+    -webkit-transition: 0.7s;
+    -o-transition: 0.7s;
+    transition: 0.7s;
+  }
+
+  .bb8-toggle__star {
+    position: absolute;
+    width: 0.063em;
+    height: 0.063em;
+    background: #fff;
+    border-radius: var(--radius);
+    -webkit-filter: drop-shadow(0 0 0.063em #fff);
+    filter: drop-shadow(0 0 0.063em #fff);
+    color: #fff;
+    top: 100%;
+  }
+
+  .bb8-toggle__star:nth-child(1) {
+    left: 3.75em;
+    -webkit-box-shadow: 1.25em 0.938em, -1.25em 2.5em, 0 1.25em, 1.875em 0.625em,
+      -3.125em 1.875em, 1.25em 2.813em;
+    box-shadow: 1.25em 0.938em, -1.25em 2.5em, 0 1.25em, 1.875em 0.625em,
+      -3.125em 1.875em, 1.25em 2.813em;
+    -webkit-transition: 0.2s;
+    -o-transition: 0.2s;
+    transition: 0.2s;
+  }
+
+  .bb8-toggle__star:nth-child(2) {
+    left: 4.688em;
+    -webkit-box-shadow: 0.625em 0, 0 0.625em, -0.625em -0.625em, 0.625em 0.938em,
+      -3.125em 1.25em, 1.25em -1.563em;
+    box-shadow: 0.625em 0, 0 0.625em, -0.625em -0.625em, 0.625em 0.938em,
+      -3.125em 1.25em, 1.25em -1.563em;
+    -webkit-transition: 0.3s;
+    -o-transition: 0.3s;
+    transition: 0.3s;
+  }
+
+  .bb8-toggle__star:nth-child(3) {
+    left: 5.313em;
+    -webkit-box-shadow: -0.625em -0.625em, -2.188em 1.25em, -2.188em 0,
+      -3.75em -0.625em, -3.125em -0.625em, -2.5em -0.313em, 0.75em -0.625em;
+    box-shadow: -0.625em -0.625em, -2.188em 1.25em, -2.188em 0, -3.75em -0.625em,
+      -3.125em -0.625em, -2.5em -0.313em, 0.75em -0.625em;
+    -webkit-transition: var(--transition);
+    -o-transition: var(--transition);
+    transition: var(--transition);
+  }
+
+  .bb8-toggle__star:nth-child(4) {
+    left: 1.875em;
+    width: 0.125em;
+    height: 0.125em;
+    -webkit-transition: 0.5s;
+    -o-transition: 0.5s;
+    transition: 0.5s;
+  }
+
+  .bb8-toggle__star:nth-child(5) {
+    left: 5em;
+    width: 0.125em;
+    height: 0.125em;
+    -webkit-transition: 0.6s;
+    -o-transition: 0.6s;
+    transition: 0.6s;
+  }
+
+  .bb8-toggle__star:nth-child(6) {
+    left: 2.5em;
+    width: 0.125em;
+    height: 0.125em;
+    -webkit-transition: 0.7s;
+    -o-transition: 0.7s;
+    transition: 0.7s;
+  }
+
+  .bb8-toggle__star:nth-child(7) {
+    left: 3.438em;
+    width: 0.125em;
+    height: 0.125em;
+    -webkit-transition: 0.8s;
+    -o-transition: 0.8s;
+    transition: 0.8s;
+  }
+
+  /* actions */
+
+  .bb8-toggle__checkbox:checked
+    + .bb8-toggle__container
+    .bb8-toggle__star:nth-child(1) {
+    top: 0.625em;
+  }
+
+  .bb8-toggle__checkbox:checked
+    + .bb8-toggle__container
+    .bb8-toggle__star:nth-child(2) {
+    top: 1.875em;
+  }
+
+  .bb8-toggle__checkbox:checked
+    + .bb8-toggle__container
+    .bb8-toggle__star:nth-child(3) {
+    top: 1.25em;
+  }
+
+  .bb8-toggle__checkbox:checked
+    + .bb8-toggle__container
+    .bb8-toggle__star:nth-child(4) {
+    top: 3.438em;
+  }
+
+  .bb8-toggle__checkbox:checked
+    + .bb8-toggle__container
+    .bb8-toggle__star:nth-child(5) {
+    top: 3.438em;
+  }
+
+  .bb8-toggle__checkbox:checked
+    + .bb8-toggle__container
+    .bb8-toggle__star:nth-child(6) {
+    top: 0.313em;
+  }
+
+  .bb8-toggle__checkbox:checked
+    + .bb8-toggle__container
+    .bb8-toggle__star:nth-child(7) {
+    top: 1.875em;
+  }
+
+  .bb8-toggle__checkbox:checked + .bb8-toggle__container .bb8-toggle__cloud {
+    right: -100%;
+  }
+
+  .bb8-toggle__checkbox:checked + .bb8-toggle__container .gomrassen {
+    top: 0.938em;
+  }
+
+  .bb8-toggle__checkbox:checked + .bb8-toggle__container .hermes {
+    top: 2.5em;
+  }
+
+  .bb8-toggle__checkbox:checked + .bb8-toggle__container .chenini {
+    top: 2.75em;
+  }
+
+  .bb8-toggle__checkbox:checked + .bb8-toggle__container {
+    background-position-y: 0;
+  }
+
+  .bb8-toggle__checkbox:checked + .bb8-toggle__container .tatto-1 {
+    top: 100%;
+  }
+
+  .bb8-toggle__checkbox:checked + .bb8-toggle__container .tatto-2 {
+    top: 100%;
+  }
+
+  .bb8-toggle__checkbox:checked + .bb8-toggle__container .bb8 {
+    left: calc(100% - var(--bb8-diameter) - var(--toggle-offset));
+  }
+
+  .bb8-toggle__checkbox:checked + .bb8-toggle__container .bb8__shadow {
+    left: calc(100% - var(--bb8-diameter) - var(--toggle-offset) + 0.938em);
+    -webkit-transform: skew(70deg);
+    -ms-transform: skew(70deg);
+    transform: skew(70deg);
+  }
+
+  .bb8-toggle__checkbox:checked + .bb8-toggle__container .bb8__body {
+    -webkit-transform: rotate(180deg);
+    -ms-transform: rotate(180deg);
+    transform: rotate(225deg);
+  }
+
+  .bb8-toggle__checkbox:hover + .bb8-toggle__container .bb8__head::before {
+    left: 100%;
+  }
+
+  .bb8-toggle__checkbox:not(:checked):hover
+    + .bb8-toggle__container
+    .bb8__antenna:nth-child(1) {
+    right: 1.5em;
+  }
+
+  .bb8-toggle__checkbox:hover
+    + .bb8-toggle__container
+    .bb8__antenna:nth-child(2) {
+    left: 0.938em;
+  }
+
+  .bb8-toggle__checkbox:hover + .bb8-toggle__container .bb8__head::after {
+    background-position: 1.375em 0;
+  }
+
+  .bb8-toggle__checkbox:checked:hover
+    + .bb8-toggle__container
+    .bb8__head::before {
+    left: 0;
+  }
+
+  .bb8-toggle__checkbox:checked:hover
+    + .bb8-toggle__container
+    .bb8__antenna:nth-child(2) {
+    left: calc(100% - 0.938em);
+  }
+
+  .bb8-toggle__checkbox:checked:hover
+    + .bb8-toggle__container
+    .bb8__head::after {
+    background-position: -1.375em 0;
+  }
+
+  .bb8-toggle__checkbox:active + .bb8-toggle__container .bb8__head-container {
+    -webkit-transform: rotate(25deg);
+    -ms-transform: rotate(25deg);
+    transform: rotate(25deg);
+  }
+
+  .bb8-toggle__checkbox:checked:active
+    + .bb8-toggle__container
+    .bb8__head-container {
+    -webkit-transform: rotate(-25deg);
+    -ms-transform: rotate(-25deg);
+    transform: rotate(-25deg);
+  }
+
+  .bb8:hover .bb8__head::before,
+  .bb8:hover .bb8__antenna:nth-child(2) {
+    left: 50% !important;
+  }
+
+  .bb8:hover .bb8__antenna:nth-child(1) {
+    right: 0.938em !important;
+  }
+
+  .bb8:hover .bb8__head::after {
+    background-position: 0 0 !important;
+  }
+`;
+
+export default Switch;
