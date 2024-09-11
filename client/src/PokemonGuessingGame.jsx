@@ -89,13 +89,58 @@ const PokemonGuessingGame = () => {
   const handleGuess = async () => {
     if (!hasGuessed && !gameFinished && gameData.status === "ready") {
       const gameRef = ref(db, `games/${gameId}`);
-      const timeTaken = Date.now() - gameData.roundStartTime; // Calculate time taken
+      const timeTaken = Date.now() - gameData.roundStartTime;
       const updates = {};
       updates[`${currentPlayer}/guess`] = selectedOption;
       updates[`${currentPlayer}/timeTaken`] = timeTaken;
       await update(gameRef, updates);
       setHasGuessed(true);
       setSelectedOption("");
+
+      const updatedGameData = (await get(gameRef)).val();
+      if (updatedGameData.player1.guess && updatedGameData.player2.guess) {
+        await progressToNextRound(updatedGameData);
+      }
+    }
+  };
+
+  const progressToNextRound = async (currentGameData) => {
+    const gameRef = ref(db, `games/${gameId}`);
+    const correctAnswer = currentGameData.currentPokemon.correct.name.toLowerCase();
+    const player1Correct = currentGameData.player1.guess.toLowerCase() === correctAnswer;
+    const player2Correct = currentGameData.player2.guess.toLowerCase() === correctAnswer;
+
+    const calculateScore = (isCorrect, timeTaken) => {
+      if (!isCorrect) return 0;
+      const baseScore = 100;
+      const timeBonus = Math.max(0, 30 - Math.floor(timeTaken / 1000)) * 10;
+      return baseScore + timeBonus;
+    };
+
+    const newScore = {
+      player1: score.player1 + calculateScore(player1Correct, currentGameData.player1.timeTaken),
+      player2: score.player2 + calculateScore(player2Correct, currentGameData.player2.timeTaken),
+    };
+    setScore(newScore);
+
+    if (currentGameData.currentRound >= 5) {
+      setGameFinished(true);
+      setCountdown(10);
+      await update(gameRef, {
+        status: "finished",
+        finalScores: newScore,
+      });
+    } else {
+      const newPokemonData = await fetchPokemon();
+      await update(gameRef, {
+        currentRound: currentGameData.currentRound + 1,
+        currentPokemon: newPokemonData,
+        player1: { guess: "", score: newScore.player1 },
+        player2: { guess: "", score: newScore.player2 },
+        roundStartTime: Date.now(),
+      });
+      setHasGuessed(false);
+      setCountdown(30);
     }
   };
 
@@ -107,54 +152,8 @@ const PokemonGuessingGame = () => {
         setGameData(data);
         setPokemon(data?.currentPokemon || { correct: {}, options: [] });
 
-        if (
-          data?.status === "ready" &&
-          data?.player1?.guess &&
-          data?.player2?.guess
-        ) {
-          const correctAnswer = data.currentPokemon.correct.name.toLowerCase();
-          const player1Correct =
-            data.player1.guess.toLowerCase() === correctAnswer;
-          const player2Correct =
-            data.player2.guess.toLowerCase() === correctAnswer;
-
-          const calculateScore = (isCorrect, timeTaken) => {
-            if (!isCorrect) return 0;
-            const baseScore = 100;
-            const timeBonus =
-              Math.max(0, 30 - Math.floor(timeTaken / 1000)) * 10;
-            return baseScore + timeBonus;
-          };
-
-          const newScore = {
-            player1:
-              score.player1 +
-              calculateScore(player1Correct, data.player1.timeTaken),
-            player2:
-              score.player2 +
-              calculateScore(player2Correct, data.player2.timeTaken),
-          };
-          setScore(newScore);
-
-          if (data.currentRound >= 5) {
-            setGameFinished(true);
-            setCountdown(10);
-            await update(gameRef, {
-              status: "finished",
-              finalScores: newScore,
-            });
-          } else {
-            const newPokemonData = await fetchPokemon();
-            await update(gameRef, {
-              currentRound: data.currentRound + 1,
-              currentPokemon: newPokemonData,
-              player1: { guess: "", score: newScore.player1 },
-              player2: { guess: "", score: newScore.player2 },
-              roundStartTime: Date.now(),
-            });
-            setHasGuessed(false);
-            setCountdown(30);
-          }
+        if (data?.status === "ready" && data?.player1?.guess && data?.player2?.guess) {
+          await progressToNextRound(data);
         }
       });
 
@@ -162,7 +161,6 @@ const PokemonGuessingGame = () => {
     }
   }, [gameId, score, fetchPokemon]);
 
-  // untuk sinkron waktu ketika join game
   useEffect(() => {
     if (gameId && gameData?.roundStartTime) {
       const timer = setInterval(() => {
@@ -173,12 +171,14 @@ const PokemonGuessingGame = () => {
 
         if (remainingTime <= 0) {
           clearInterval(timer);
+          // Trigger next round
+          progressToNextRound(gameData);
         }
       }, 1000);
 
       return () => clearInterval(timer);
     }
-  }, [gameId, gameData?.roundStartTime]);
+  }, [gameId, gameData]);
   
 
   useEffect(() => {
