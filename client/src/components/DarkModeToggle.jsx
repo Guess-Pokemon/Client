@@ -1,16 +1,8 @@
-import { useState, useEffect } from "react";
+import { useDarkMode } from "../context/DarkModeContext";
 import "./DarkModeToggle.css";
 
 export default function DarkModeToggle() {
-  const [darkMode, setDarkMode] = useState(true);
-
-  useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-  }, [darkMode]);
+  const { darkMode, setDarkMode } = useDarkMode();
 
   return (
     <div>
