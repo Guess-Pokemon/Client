@@ -61,7 +61,7 @@ const PokemonGuessingGame = () => {
       currentRound: 1,
       status: "waiting",
       currentPokemon: pokemonData,
-      roundStartTime: Date.now(),
+      roundStartTime: null,
     };
     await set(gameRef, gameData);
     setGameId(newGameId);
@@ -73,9 +73,13 @@ const PokemonGuessingGame = () => {
     const snapshot = await get(gameRef);
     const data = snapshot.val();
     if (data && data.status === "waiting") {
+      const roundStartTime = Date.now();
+      await update(gameRef, {
+        status: "ready",
+        roundStartTime,
+      });
       setGameId(inputGameId);
       setCurrentPlayer("player2");
-      await update(gameRef, { status: "ready" });
     } else {
       alert("Game not available or already started");
     }
@@ -85,7 +89,7 @@ const PokemonGuessingGame = () => {
   const handleGuess = async () => {
     if (!hasGuessed && !gameFinished && gameData.status === "ready") {
       const gameRef = ref(db, `games/${gameId}`);
-      const timeTaken = Date.now() - gameData.roundStartTime;
+      const timeTaken = Date.now() - gameData.roundStartTime; // Calculate time taken
       const updates = {};
       updates[`${currentPlayer}/guess`] = selectedOption;
       updates[`${currentPlayer}/timeTaken`] = timeTaken;
@@ -158,19 +162,24 @@ const PokemonGuessingGame = () => {
     }
   }, [gameId, score, fetchPokemon]);
 
+  // untuk sinkron waktu ketika join game
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev <= 0) {
-          clearInterval(timer);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
+    if (gameId && gameData?.roundStartTime) {
+      const timer = setInterval(() => {
+        const now = Date.now();
+        const elapsed = Math.floor((now - gameData.roundStartTime) / 1000);
+        const remainingTime = Math.max(30 - elapsed, 0);
+        setCountdown(remainingTime);
 
-    return () => clearInterval(timer);
-  }, []);
+        if (remainingTime <= 0) {
+          clearInterval(timer);
+        }
+      }, 1000);
+
+      return () => clearInterval(timer);
+    }
+  }, [gameId, gameData?.roundStartTime]);
+  
 
   useEffect(() => {
     if (countdown === 0 && gameFinished) {
