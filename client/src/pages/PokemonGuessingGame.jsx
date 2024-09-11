@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { ref, set, onValue, update, remove, get } from "firebase/database";
+import { ref, set, onValue, update, remove, get, runTransaction } from "firebase/database";
 import { db } from "../config/firebaseConfig";
 import { v4 as uuidv4 } from "uuid";
 import Loader from "../components/Loader";
@@ -19,6 +19,9 @@ const PokemonGuessingGame = () => {
   const [selectedOption, setSelectedOption] = useState("");
   const [isCopied, setIsCopied] = useState(false);
   const [username, setUsername] = useState("");
+  const [imageLoading, setImageLoading] = useState(true);
+  const [imageError, setImageError] = useState(false);
+  const [currentImageSrc, setCurrentImageSrc] = useState("");
 
   useEffect(() => {
     const storedUsername = localStorage.getItem("username");
@@ -59,6 +62,15 @@ const PokemonGuessingGame = () => {
     }
   }, []);
 
+  const preloadImage = (src) => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(src);
+      img.onerror = () => reject(new Error(`Failed to load image: ${src}`));
+      img.src = src;
+    });
+  };
+
   const createNewGame = async () => {
     const newGameId = uuidv4();
     localStorage.setItem("gameId", newGameId);
@@ -80,21 +92,26 @@ const PokemonGuessingGame = () => {
 
   const joinExistingGame = async () => {
     const gameRef = ref(db, `games/${inputGameId}`);
-    const snapshot = await get(gameRef);
-    const data = snapshot.val();
-    if (data && data.status === "waiting" && !data.player2.username) {
-      const roundStartTime = Date.now();
-      localStorage.setItem("gameId", inputGameId);
-      await update(gameRef, {
-        status: "ready",
-        "player2/username": username,
-        roundStartTime,
+    try {
+      await runTransaction(gameRef, (currentData) => {
+        if (currentData === null) {
+          return { error: "Game does not exist" };
+        }
+        if (currentData.status !== "waiting" || currentData.player2.username) {
+          return { error: "Game already started or full" };
+        }
+        currentData.status = "ready";
+        currentData.player2.username = username;
+        currentData.roundStartTime = Date.now();
+        return currentData;
       });
+      localStorage.setItem("gameId", inputGameId);
       setGameId(inputGameId);
       setCurrentPlayer("player2");
       localStorage.setItem("role", "player2");
-    } else {
-      alert("Game not available or already started");
+    } catch (error) {
+      console.error("Failed to join game:", error);
+      alert("Failed to join game. Please try again.");
     }
     setInputGameId("");
   };
@@ -106,65 +123,57 @@ const PokemonGuessingGame = () => {
     }
     if (!hasGuessed && !gameFinished && gameData.status === "ready") {
       const gameRef = ref(db, `games/${gameId}`);
-      const timeTaken = Date.now() - gameData.roundStartTime;
-      const updates = {};
-      updates[`${currentPlayer}/guess`] = selectedOption;
-      updates[`${currentPlayer}/timeTaken`] = timeTaken;
-      await update(gameRef, updates);
-      setHasGuessed(true);
-      setSelectedOption("");
+      try {
+        await runTransaction(gameRef, (currentData) => {
+          if (currentData === null || currentData.status !== "ready" || currentData[currentPlayer].guess) {
+            return;
+          }
+          
+          currentData[currentPlayer].guess = selectedOption;
+          currentData[currentPlayer].timeTaken = Date.now() - currentData.roundStartTime;
 
-      const updatedGameData = (await get(gameRef)).val();
-      if (updatedGameData.player1.guess && updatedGameData.player2.guess) {
-        await progressToNextRound(updatedGameData);
+          if (currentData.player1.guess && currentData.player2.guess) {
+            const correctAnswer = currentData.currentPokemon.correct.name.toLowerCase();
+            const player1Correct = currentData.player1.guess.toLowerCase() === correctAnswer;
+            const player2Correct = currentData.player2.guess.toLowerCase() === correctAnswer;
+
+            currentData.player1.score += player1Correct ? 100 : 0;
+            currentData.player2.score += player2Correct ? 100 : 0;
+
+            if (currentData.currentRound >= 5) {
+              currentData.status = "finished";
+              currentData.finalScores = {
+                player1: currentData.player1.score,
+                player2: currentData.player2.score,
+              };
+            } else {
+              currentData.currentRound += 1;
+              currentData.roundStartTime = Date.now();
+              currentData.player1.guess = "";
+              currentData.player2.guess = "";
+              currentData.status = "nextRound";
+            }
+          }
+
+          return currentData;
+        });
+
+        setHasGuessed(true);
+        setSelectedOption("");
+
+        // If it's time for the next round, fetch new Pokemon
+        const updatedData = (await get(gameRef)).val();
+        if (updatedData.status === "nextRound") {
+          const newPokemonData = await fetchPokemon();
+          await update(gameRef, { 
+            currentPokemon: newPokemonData,
+            status: "ready",
+            roundStartTime: Date.now()
+          });
+        }
+      } catch (error) {
+        console.error("Failed to submit guess:", error);
       }
-    }
-  };
-
-  const progressToNextRound = async (currentGameData) => {
-    const gameRef = ref(db, `games/${gameId}`);
-    const correctAnswer =
-      currentGameData.currentPokemon.correct.name.toLowerCase();
-    const player1Correct =
-      currentGameData.player1.guess.toLowerCase() === correctAnswer;
-    const player2Correct =
-      currentGameData.player2.guess.toLowerCase() === correctAnswer;
-
-    const calculateScore = (currentScore, isCorrect) => {
-      return isCorrect ? currentScore + 100 : currentScore;
-    };
-
-    const newScore = {
-      player1: calculateScore(currentGameData.player1.score, player1Correct),
-      player2: calculateScore(currentGameData.player2.score, player2Correct),
-    };
-
-    if (currentGameData.currentRound >= 5) {
-      setGameFinished(true);
-      setCountdown(10);
-      await update(gameRef, {
-        status: "finished",
-        finalScores: newScore,
-      });
-    } else {
-      const newPokemonData = await fetchPokemon();
-      await update(gameRef, {
-        currentRound: currentGameData.currentRound + 1,
-        currentPokemon: newPokemonData,
-        player1: {
-          username: `${currentGameData.player1.username}`,
-          guess: "",
-          score: newScore.player1,
-        },
-        player2: {
-          username: `${currentGameData.player2.username}`,
-          guess: "",
-          score: newScore.player2,
-        },
-        roundStartTime: Date.now(),
-      });
-      setHasGuessed(false);
-      setCountdown(30);
     }
   };
 
@@ -172,27 +181,42 @@ const PokemonGuessingGame = () => {
     if (gameId) {
       const gameRef = ref(db, `games/${gameId}`);
       setCurrentPlayer(localStorage.getItem("role"));
-      const unsubscribe = onValue(gameRef, (snapshot) => {
+      const unsubscribe = onValue(gameRef, async (snapshot) => {
         const data = snapshot.val();
         setGameData(data);
         setPokemon(data?.currentPokemon || { correct: {}, options: [] });
+
+        if (data?.currentPokemon && data.currentPokemon.correct.image !== currentImageSrc) {
+          setImageLoading(true);
+          try {
+            await preloadImage(data.currentPokemon.correct.image);
+            setImageLoading(false);
+            setImageError(false);
+            setCurrentImageSrc(data.currentPokemon.correct.image);
+          } catch (error) {
+            console.error("Failed to preload image:", error);
+            setImageLoading(false);
+            setImageError(true);
+          }
+        }
+
         setScore({
           player1: data?.player1?.score || 0,
           player2: data?.player2?.score || 0,
         });
 
-        if (
-          data?.status === "ready" &&
-          data?.player1?.guess &&
-          data?.player2?.guess
-        ) {
-          progressToNextRound(data);
+        if (data?.status === "finished") {
+          setGameFinished(true);
+          setCountdown(10);
+        } else if (data?.status === "ready") {
+          setHasGuessed(data[currentPlayer]?.guess !== "");
+          setCountdown(30);
         }
       });
 
       return () => unsubscribe();
     }
-  }, [gameId, fetchPokemon]);
+  }, [gameId, currentPlayer, currentImageSrc]);
 
   useEffect(() => {
     if (gameId && gameData?.roundStartTime && !gameFinished) {
@@ -259,10 +283,7 @@ const PokemonGuessingGame = () => {
   const handleCopy = () => {
     navigator.clipboard.writeText(gameId);
     setIsCopied(true);
-
-    setTimeout(() => {
-      setIsCopied(false);
-    }, 2000);
+    setTimeout(() => setIsCopied(false), 2000);
   };
 
   return (
@@ -317,11 +338,23 @@ const PokemonGuessingGame = () => {
               <h2 className="text-2xl font-bold mb-4">
                 Guess the Pokémon (Round {gameData.currentRound}/5)
               </h2>
-              <img
-                src={pokemon.correct.image}
-                alt="Pokemon to guess"
-                className="w-64 h-64 object-contain mx-auto mb-4"
-              />
+              <div className="relative w-64 h-64 mx-auto mb-4">
+                {imageLoading && (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <Loader />
+                  </div>
+                )}
+                {imageError && (
+                  <p className="text-red-500 text-center">Error loading image. Please try again.</p>
+                )}
+                {!imageLoading && !imageError && (
+                  <img
+                    src={currentImageSrc}
+                    alt="Pokemon to guess"
+                    className="w-full h-full object-contain"
+                  />
+                )}
+              </div>
               <div className="text-xl mb-4">
                 Time remaining: {countdown} seconds
               </div>
@@ -373,9 +406,9 @@ const PokemonGuessingGame = () => {
               </div>
               <div className="mt-4">
                 {gameData.finalScores.player1 > gameData.finalScores.player2
-                  ? `${gameData?.player1?.username}` + " wins!"
+                  ? `${gameData?.player1?.username} wins!`
                   : gameData.finalScores.player2 > gameData.finalScores.player1
-                  ? `${gameData?.player2?.username}` + " wins!"
+                  ? `${gameData?.player2?.username} wins!`
                   : "It's a tie!"}
               </div>
               <div className="mt-4">
