@@ -5,7 +5,6 @@ import { v4 as uuidv4 } from "uuid";
 import Loader from "../components/Loader";
 import { RiFileCopyLine } from "react-icons/ri";
 import { MdDone } from "react-icons/md";
-import Login from "./Login";
 
 const PokemonGuessingGame = () => {
   const [gameId, setGameId] = useState("");
@@ -62,6 +61,7 @@ const PokemonGuessingGame = () => {
 
   const createNewGame = async () => {
     const newGameId = uuidv4();
+    localStorage.setItem("gameId", newGameId);
     const pokemonData = await fetchPokemon();
     const gameRef = ref(db, `games/${newGameId}`);
     const gameData = {
@@ -75,6 +75,7 @@ const PokemonGuessingGame = () => {
     await set(gameRef, gameData);
     setGameId(newGameId);
     setCurrentPlayer("player1");
+    localStorage.setItem("role", "player1");
   };
 
   const joinExistingGame = async () => {
@@ -83,6 +84,7 @@ const PokemonGuessingGame = () => {
     const data = snapshot.val();
     if (data && data.status === "waiting" && !data.player2.username) {
       const roundStartTime = Date.now();
+      localStorage.setItem("gameId", inputGameId);
       await update(gameRef, {
         status: "ready",
         "player2/username": username,
@@ -90,6 +92,7 @@ const PokemonGuessingGame = () => {
       });
       setGameId(inputGameId);
       setCurrentPlayer("player2");
+      localStorage.setItem("role", "player2");
     } else {
       alert("Game not available or already started");
     }
@@ -97,13 +100,26 @@ const PokemonGuessingGame = () => {
   };
 
   const handleGuess = async () => {
+    if (!gameId) {
+      console.error("Game ID is missing");
+      return;
+    }
     if (!hasGuessed && !gameFinished && gameData.status === "ready") {
+      console.log("😁😁😁😁😁😁");
       const gameRef = ref(db, `games/${gameId}`);
       const timeTaken = Date.now() - gameData.roundStartTime;
       const updates = {};
       updates[`${currentPlayer}/guess`] = selectedOption;
+      console.log(currentPlayer, "<<<current player😂😂😂😂");
+
       updates[`${currentPlayer}/timeTaken`] = timeTaken;
-      await update(gameRef, updates);
+      try {
+        console.log("INI MASUK TRY");
+
+        await update(gameRef, updates);
+      } catch (err) {
+        console.log(err, "<<< error di trycatch handleguess");
+      }
       setHasGuessed(true);
       setSelectedOption("");
 
@@ -164,6 +180,7 @@ const PokemonGuessingGame = () => {
   useEffect(() => {
     if (gameId) {
       const gameRef = ref(db, `games/${gameId}`);
+      setCurrentPlayer(localStorage.getItem("role"));
       const unsubscribe = onValue(gameRef, (snapshot) => {
         const data = snapshot.val();
         setGameData(data);
@@ -210,6 +227,8 @@ const PokemonGuessingGame = () => {
       remove(gameRef)
         .then(() => {
           alert("Game finished and deleted.");
+          localStorage.removeItem("gameId");
+          localStorage.removeItem("role");
           setGameId("");
           setHasGuessed(false);
           setGameFinished(false);
@@ -218,6 +237,25 @@ const PokemonGuessingGame = () => {
         .catch((error) => console.error("Failed to delete game:", error));
     }
   }, [countdown, gameFinished, gameId]);
+
+  const fetchGameData = async (storedGameId) => {
+    const gameRef = ref(db, `games/${storedGameId}`);
+    const snapshot = await get(gameRef);
+    if (snapshot.exists()) {
+      const data = snapshot.val();
+      setGameData(data);
+    } else {
+      console.error("Game not found");
+    }
+  };
+
+  useEffect(() => {
+    const storedGameId = localStorage.getItem("gameId");
+    if (storedGameId) {
+      setGameId(storedGameId);
+      fetchGameData(storedGameId);
+    }
+  }, []);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(gameId);
