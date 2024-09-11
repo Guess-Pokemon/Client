@@ -1,6 +1,8 @@
 import { createBrowserRouter } from "react-router-dom";
-import PokemonGuessingGame from "./PokemonGuessingGame";
+import PokemonGuessingGame from "./pages/PokemonGuessingGame";
+import Login from "./pages/Login";
 import RootLayout from "./layouts/RootLayout";
+
 
 export const router = createBrowserRouter([
   {
@@ -9,7 +11,7 @@ export const router = createBrowserRouter([
     children: [
       {
         path: "/login",
-        element: <h1>login page</h1>,
+        element: <Login />,
       },
     ],
   },
@@ -23,5 +25,5 @@ export const router = createBrowserRouter([
         element: <PokemonGuessingGame />,
       },
     ],
-  },
+  }
 ]);
