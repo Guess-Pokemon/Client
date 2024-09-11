@@ -105,21 +105,12 @@ const PokemonGuessingGame = () => {
       return;
     }
     if (!hasGuessed && !gameFinished && gameData.status === "ready") {
-      console.log("😁😁😁😁😁😁");
       const gameRef = ref(db, `games/${gameId}`);
       const timeTaken = Date.now() - gameData.roundStartTime;
       const updates = {};
       updates[`${currentPlayer}/guess`] = selectedOption;
-      console.log(currentPlayer, "<<<current player😂😂😂😂");
-
       updates[`${currentPlayer}/timeTaken`] = timeTaken;
-      try {
-        console.log("INI MASUK TRY");
-
-        await update(gameRef, updates);
-      } catch (err) {
-        console.log(err, "<<< error di trycatch handleguess");
-      }
+      await update(gameRef, updates);
       setHasGuessed(true);
       setSelectedOption("");
 
@@ -210,17 +201,16 @@ const PokemonGuessingGame = () => {
         const elapsed = Math.floor((now - gameData.roundStartTime) / 1000);
         const remainingTime = Math.max(30 - elapsed, 0);
         setCountdown(remainingTime);
-  
+
         if (remainingTime <= 0) {
           clearInterval(timer);
           progressToNextRound(gameData);
         }
       }, 1000);
-  
+
       return () => clearInterval(timer);
     }
   }, [gameId, gameData, gameFinished]);
-  
 
   useEffect(() => {
     if (gameId && gameFinished) {
@@ -242,11 +232,10 @@ const PokemonGuessingGame = () => {
           return prevCountdown - 1;
         });
       }, 1000);
-  
+
       return () => clearInterval(timer);
     }
   }, [gameId, gameFinished]);
-  
 
   const fetchGameData = async (storedGameId) => {
     const gameRef = ref(db, `games/${storedGameId}`);

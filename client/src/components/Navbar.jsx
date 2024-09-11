@@ -4,6 +4,8 @@ export default function Navbar() {
   const navigate = useNavigate();
   const handleLogout = () => {
     localStorage.removeItem("username");
+    localStorage.removeItem("role");
+    localStorage.removeItem("gameId");
     navigate("/login");
   };
   return (
