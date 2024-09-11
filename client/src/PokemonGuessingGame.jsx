@@ -109,20 +109,19 @@ const PokemonGuessingGame = () => {
     const correctAnswer = currentGameData.currentPokemon.correct.name.toLowerCase();
     const player1Correct = currentGameData.player1.guess.toLowerCase() === correctAnswer;
     const player2Correct = currentGameData.player2.guess.toLowerCase() === correctAnswer;
-
-    const calculateScore = (isCorrect, timeTaken) => {
-      if (!isCorrect) return 0;
-      const baseScore = 100;
-      const timeBonus = Math.max(0, 30 - Math.floor(timeTaken / 1000)) * 10;
-      return baseScore + timeBonus;
+  
+    // Fungsi untuk menghitung skor berdasarkan jawaban
+    const calculateScore = (currentScore, isCorrect) => {
+      return isCorrect ? currentScore + 100 : currentScore;
     };
-
+  
+    // Hitung skor baru berdasarkan data yang ada di Firebase
     const newScore = {
-      player1: score.player1 + calculateScore(player1Correct, currentGameData.player1.timeTaken),
-      player2: score.player2 + calculateScore(player2Correct, currentGameData.player2.timeTaken),
+      player1: calculateScore(currentGameData.player1.score, player1Correct),
+      player2: calculateScore(currentGameData.player2.score, player2Correct),
     };
-    setScore(newScore);
-
+  
+    // Update skor dan data ronde berikutnya di Firebase
     if (currentGameData.currentRound >= 5) {
       setGameFinished(true);
       setCountdown(10);
@@ -143,23 +142,31 @@ const PokemonGuessingGame = () => {
       setCountdown(30);
     }
   };
+  
+  
+  
 
   useEffect(() => {
     if (gameId) {
       const gameRef = ref(db, `games/${gameId}`);
-      const unsubscribe = onValue(gameRef, async (snapshot) => {
+      const unsubscribe = onValue(gameRef, (snapshot) => {
         const data = snapshot.val();
         setGameData(data);
         setPokemon(data?.currentPokemon || { correct: {}, options: [] });
-
+        setScore({
+          player1: data?.player1?.score || 0,
+          player2: data?.player2?.score || 0
+        });
+  
         if (data?.status === "ready" && data?.player1?.guess && data?.player2?.guess) {
-          await progressToNextRound(data);
+          progressToNextRound(data);
         }
       });
-
+  
       return () => unsubscribe();
     }
-  }, [gameId, score, fetchPokemon]);
+  }, [gameId, fetchPokemon]);
+  
 
   useEffect(() => {
     if (gameId && gameData?.roundStartTime) {
