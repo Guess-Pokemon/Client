@@ -272,7 +272,7 @@ const PokemonGuessingGame = () => {
               toast: true,
               position: "top-end",
               showConfirmButton: false,
-              timer: 7000,
+              timer: 4000,
               timerProgressBar: true,
               didOpen: (toast) => {
                 toast.onmouseenter = Swal.stopTimer;
@@ -281,7 +281,7 @@ const PokemonGuessingGame = () => {
             });
             Toast.fire({
               icon: "info",
-              title: "Your opponent has already submitted their guess. Please make your guess as soon as possible.",
+              title: "Your opponent has already submitted their guess.",
             });
           }
         }
@@ -356,12 +356,21 @@ const PokemonGuessingGame = () => {
   const handleCopy = () => {
     navigator.clipboard.writeText(gameId);
     setIsCopied(true);
-    Swal.fire({
-      title: 'Copied!',
-      text: 'Game ID has been copied to clipboard.',
-      icon: 'success',
-      confirmButtonText: 'OK'
-    });
+    const Toast = Swal.mixin({
+              toast: true,
+              position: "top-end",
+              showConfirmButton: false,
+              timer: 2000,
+              timerProgressBar: true,
+              didOpen: (toast) => {
+                toast.onmouseenter = Swal.stopTimer;
+                toast.onmouseleave = Swal.resumeTimer;
+              },
+            });
+            Toast.fire({
+              icon: "success",
+              title: "Game ID has been copied to clipboard.",
+            });
     setTimeout(() => setIsCopied(false), 2000);
   };
 
