@@ -10,7 +10,11 @@ const Login = () => {
             localStorage.setItem("username", username);
             navigate("/");
         } else {
-            alert("Please enter a username.");
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: 'Please enter a username before join the game.',
+            })
         }
     };
 
