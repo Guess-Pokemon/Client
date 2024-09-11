@@ -26,7 +26,9 @@ export default function Navbar() {
         </div>
 
         <div className="flex items-center space-x-3 md:space-x-0 rtl:space-x-reverse">
-          <DarkModeToggle />
+          <div className="mx-3">
+            <DarkModeToggle />
+          </div>
           {localStorage.getItem("username") && (
             <button
               type="button"
