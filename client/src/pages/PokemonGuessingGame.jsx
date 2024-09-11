@@ -204,39 +204,49 @@ const PokemonGuessingGame = () => {
   }, [gameId, fetchPokemon]);
 
   useEffect(() => {
-    if (gameId && gameData?.roundStartTime) {
+    if (gameId && gameData?.roundStartTime && !gameFinished) {
       const timer = setInterval(() => {
         const now = Date.now();
         const elapsed = Math.floor((now - gameData.roundStartTime) / 1000);
         const remainingTime = Math.max(30 - elapsed, 0);
         setCountdown(remainingTime);
-
+  
         if (remainingTime <= 0) {
           clearInterval(timer);
           progressToNextRound(gameData);
         }
       }, 1000);
-
+  
       return () => clearInterval(timer);
     }
-  }, [gameId, gameData]);
+  }, [gameId, gameData, gameFinished]);
+  
 
   useEffect(() => {
-    if (countdown === 0 && gameFinished) {
-      const gameRef = ref(db, `games/${gameId}`);
-      remove(gameRef)
-        .then(() => {
-          alert("Game finished and deleted.");
-          localStorage.removeItem("gameId");
-          localStorage.removeItem("role");
-          setGameId("");
-          setHasGuessed(false);
-          setGameFinished(false);
-          setScore({ player1: 0, player2: 0 });
-        })
-        .catch((error) => console.error("Failed to delete game:", error));
+    if (gameId && gameFinished) {
+      const timer = setInterval(() => {
+        setCountdown((prevCountdown) => {
+          if (prevCountdown <= 0) {
+            clearInterval(timer);
+            const gameRef = ref(db, `games/${gameId}`);
+            remove(gameRef)
+              .then(() => {
+                setGameId("");
+                setHasGuessed(false);
+                setGameFinished(false);
+                setScore({ player1: 0, player2: 0 });
+              })
+              .catch((error) => console.error("Failed to delete game:", error));
+            return 0;
+          }
+          return prevCountdown - 1;
+        });
+      }, 1000);
+  
+      return () => clearInterval(timer);
     }
-  }, [countdown, gameFinished, gameId]);
+  }, [gameId, gameFinished]);
+  
 
   const fetchGameData = async (storedGameId) => {
     const gameRef = ref(db, `games/${storedGameId}`);
