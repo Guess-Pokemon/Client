@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from "uuid";
 import Loader from "../components/Loader";
 import { RiFileCopyLine } from "react-icons/ri";
 import { MdDone } from "react-icons/md";
+import Swal from "sweetalert2";
 
 const PokemonGuessingGame = () => {
   const [gameId, setGameId] = useState("");
@@ -157,7 +158,6 @@ const PokemonGuessingGame = () => {
         setHasGuessed(true);
         setSelectedOption("");
 
-        // If it's time for the next round, fetch new Pokemon
         const updatedData = (await get(gameRef)).val();
         if (updatedData.status === "nextRound") {
           const newPokemonData = await fetchPokemon();
@@ -182,12 +182,10 @@ const PokemonGuessingGame = () => {
             return;
           }
 
-          // Set empty guess
           currentData[currentPlayer].guess = "";
           currentData[currentPlayer].timeTaken =
             Date.now() - currentData.roundStartTime;
 
-          // Proceed with processing guesses
           const correctAnswer =
             currentData.currentPokemon.correct.name.toLowerCase();
           const player1Correct =
@@ -218,7 +216,6 @@ const PokemonGuessingGame = () => {
         setHasGuessed(true);
         setSelectedOption("");
 
-        // If it's time for the next round, fetch new Pokemon
         const updatedData = (await get(gameRef)).val();
         if (updatedData.status === "nextRound") {
           const newPokemonData = await fetchPokemon();
@@ -265,9 +262,28 @@ const PokemonGuessingGame = () => {
         if (data?.status === "finished") {
           setGameFinished(true);
           setCountdown(10);
+          showEndGameAlert(data)
         } else if (data?.status === "ready") {
           setHasGuessed(data[currentPlayer]?.guess !== "");
           setCountdown(30);
+
+          if (data[currentPlayer]?.guess === "" && (data.player1.guess !== "" || data.player2.guess !== "")) {
+          const Toast = Swal.mixin({
+              toast: true,
+              position: "top-end",
+              showConfirmButton: false,
+              timer: 7000,
+              timerProgressBar: true,
+              didOpen: (toast) => {
+                toast.onmouseenter = Swal.stopTimer;
+                toast.onmouseleave = Swal.resumeTimer;
+              },
+            });
+            Toast.fire({
+              icon: "info",
+              title: "Your opponent has already submitted their guess. Please make your guess as soon as possible.",
+            });
+          }
         }
       });
 
@@ -340,7 +356,50 @@ const PokemonGuessingGame = () => {
   const handleCopy = () => {
     navigator.clipboard.writeText(gameId);
     setIsCopied(true);
+    Swal.fire({
+      title: 'Copied!',
+      text: 'Game ID has been copied to clipboard.',
+      icon: 'success',
+      confirmButtonText: 'OK'
+    });
     setTimeout(() => setIsCopied(false), 2000);
+  };
+
+  const showEndGameAlert = (data) => {
+    const player1Wins = data.finalScores.player1 > data.finalScores.player2;
+    const player2Wins = data.finalScores.player2 > data.finalScores.player1;
+    const isDraw = data.finalScores.player1 === data.finalScores.player2;
+
+    const winnerImage = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRJSXjCSs_Gaeq5JffAPcLx_jO9lQ2xyGkCvw&s';
+    const loserImage = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSy5QrEjvQ1XKDIGoLIMikTXibvbQ7IO7orKQ&s';
+    const drawImage = 'https://i.pinimg.com/736x/fe/92/e5/fe92e5f1db324cac2e036ab2af869e59.jpg'
+
+    if (isDraw) {
+    Swal.fire({
+      title: 'It\'s a Draw!',
+      imageUrl: drawImage,
+      imageAlt: 'Draw Image',
+      confirmButtonText: 'OK'
+    });
+  } else {
+    if (data.player1.username === username) {
+      Swal.fire({
+        title: player1Wins ? 'You Win!' : 'You Lose!',
+        imageUrl: player1Wins ? winnerImage : loserImage,
+        imageAlt: 'Result Image',
+        confirmButtonText: 'OK'
+      });
+    }
+
+    if (data.player2.username === username) {
+      Swal.fire({
+        title: player2Wins ? 'You Win!' : 'You Lose!',
+        imageUrl: player2Wins ? winnerImage : loserImage,
+        imageAlt: 'Result Image',
+        confirmButtonText: 'OK'
+      });
+    }
+  }
   };
 
   return (
