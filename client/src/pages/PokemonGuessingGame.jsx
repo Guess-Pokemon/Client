@@ -14,6 +14,8 @@ import Loader from "../components/Loader";
 import { RiFileCopyLine } from "react-icons/ri";
 import { MdDone } from "react-icons/md";
 import Swal from "sweetalert2";
+import { Howl, Howler } from "howler";
+import { FaVolumeUp, FaVolumeMute } from "react-icons/fa";
 
 const PokemonGuessingGame = () => {
   const [gameId, setGameId] = useState("");
@@ -31,6 +33,34 @@ const PokemonGuessingGame = () => {
   const [imageLoading, setImageLoading] = useState(true);
   const [imageError, setImageError] = useState(false);
   const [currentImageSrc, setCurrentImageSrc] = useState("");
+  const [soundEnabled, setSoundEnabled] = useState(true);
+
+  // Initialize sounds
+  const sounds = {
+    joinGame: new Howl({ src: ["/sounds/joinGame.wav"], html5: true }),
+    timeout: new Howl({ src: ["/sounds/timeOut.wav"], html5: true }),
+    wrong: new Howl({ src: ["/sounds/wrong.wav"], html5: true }),
+    correct: new Howl({ src: ["/sounds/correct.wav"], html5: true }),
+    gameOver: new Howl({ src: ["/sounds/gameOver.wav"], html5: true }),
+  };
+
+  const playSound = (soundName) => {
+    if (soundName in sounds) {
+      sounds[soundName].play();
+    }
+  };
+
+  const stopSound = (soundName) => {
+    if (soundName in sounds) {
+      sounds[soundName].stop();
+    }
+  };
+
+  // Toggle sound
+  const toggleSound = () => {
+    setSoundEnabled(!soundEnabled);
+    Howler.mute(!soundEnabled);
+  };
 
   useEffect(() => {
     const storedUsername = localStorage.getItem("username");
@@ -97,6 +127,7 @@ const PokemonGuessingGame = () => {
     setGameId(newGameId);
     setCurrentPlayer("player1");
     localStorage.setItem("role", "player1");
+    playSound("joinGame");
   };
 
   const joinExistingGame = async () => {
@@ -115,6 +146,7 @@ const PokemonGuessingGame = () => {
       setGameId(inputGameId);
       setCurrentPlayer("player2");
       localStorage.setItem("role", "player2");
+      playSound("joinGame");
     } else {
       alert("Game not available or already started");
     }
@@ -159,6 +191,9 @@ const PokemonGuessingGame = () => {
                 player1: currentData.player1.score,
                 player2: currentData.player2.score,
               };
+
+              stopSound("joinGame");
+              playSound("gameOver");
             } else {
               currentData.currentRound += 1;
               currentData.roundStartTime = Date.now();
@@ -218,6 +253,9 @@ const PokemonGuessingGame = () => {
               player1: currentData.player1.score,
               player2: currentData.player2.score,
             };
+
+            stopSound("joinGame");
+            playSound("gameOver");
           } else {
             currentData.currentRound += 1;
             currentData.roundStartTime = Date.now();
@@ -282,6 +320,9 @@ const PokemonGuessingGame = () => {
           setGameFinished(true);
           setCountdown(10);
           showEndGameAlert(data);
+          if (soundEnabled) {
+            playSound("gameOver");
+          }
         } else if (data?.status === "ready") {
           setHasGuessed(data[currentPlayer]?.guess !== "");
           setCountdown(30);
@@ -441,28 +482,44 @@ const PokemonGuessingGame = () => {
       <h1 className="text-5xl font-bold mb-8 dark:text-white">
         Pokémon Guessing Game
       </h1>
+      <button
+        onClick={toggleSound}
+        className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded mb-4 flex items-center"
+      >
+        {soundEnabled ? (
+          <FaVolumeUp className="mr-2" />
+        ) : (
+          <FaVolumeMute className="mr-2" />
+        )}
+      </button>
       {!gameId ? (
-        <div className="space-y-4">
-          <button
-            onClick={createNewGame}
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-          >
-            Create Game
-          </button>
-          <div>
-            <input
-              type="text"
-              placeholder="Enter Game ID"
-              value={inputGameId}
-              onChange={(e) => setInputGameId(e.target.value)}
-              className="border-2 border-gray-300 bg-white h-10 px-5 rounded-lg text-sm focus:outline-none"
-            />
-            <button
-              onClick={joinExistingGame}
-              className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded ml-2"
-            >
-              Join Game
-            </button>
+        <div className="py-8 px-4 mx-auto max-w-screen-xl">
+          <div className="flex flex-col space-y-4">
+            <div className="flex items-center justify-start">
+              <button
+                onClick={createNewGame}
+                className="bg-blue-700 hover:bg-blue-800 text-white font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+              >
+                Create Game
+              </button>
+            </div>
+            <div className="flex flex-col space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0 items-center">
+              <div className="relative w-full sm:w-2/3">
+                <input
+                  type="text"
+                  placeholder="Enter Game ID"
+                  value={inputGameId}
+                  onChange={(e) => setInputGameId(e.target.value)}
+                  className="block w-full p-4 text-sm text-gray-900 border border-gray-300 rounded-lg bg-white focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:border-gray-700 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                />
+              </div>
+              <button
+                onClick={joinExistingGame}
+                className="bg-green-700 hover:bg-green-800 text-white font-medium rounded-lg text-sm px-4 py-3 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800"
+              >
+                Join Game
+              </button>
+            </div>
           </div>
         </div>
       ) : (
@@ -486,13 +543,17 @@ const PokemonGuessingGame = () => {
               </p>
             </div>
           ) : gameData?.status === "ready" ? (
-            <div>
-              <h2 className="text-2xl font-bold mb-4 dark:text-white">
-                Guess the Pokémon (Round {gameData.currentRound}/5)
+            <div className="p-4 sm:p-6 md:p-8 lg:p-10 mx-auto w-full max-w-full bg-white dark:bg-gray-800 rounded-lg shadow-lg">
+              <h2 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 text-center dark:text-white">
+                Guess the Pokémon{" "}
+                <span className="text-lg font-semibold">
+                  (Round {gameData.currentRound}/5)
+                </span>
               </h2>
-              <div className="relative w-64 h-64 mx-auto mb-4">
+
+              <div className="relative w-full h-64 mx-auto mb-4 md:mb-6">
                 {imageLoading && (
-                  <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-900 rounded-lg">
                     <Loader />
                   </div>
                 )}
@@ -505,22 +566,25 @@ const PokemonGuessingGame = () => {
                   <img
                     src={currentImageSrc}
                     alt="Pokemon to guess"
-                    className="w-full h-full object-contain"
+                    className="w-full h-full object-contain rounded-lg shadow-inner"
                   />
                 )}
               </div>
-              <div className="text-xl mb-4 dark:text-white">
-                Time remaining: {countdown} seconds
+
+              <div className="text-xl mb-4 md:mb-6 text-center dark:text-white">
+                Time remaining:{" "}
+                <span className="font-semibold">{countdown} seconds</span>
               </div>
-              <div className="grid grid-cols-2 gap-4 mb-4">
+
+              <div className="grid grid-cols-2 gap-4 mb-4 md:mb-6">
                 {pokemon.options.map((option, index) => (
                   <button
                     key={index}
                     onClick={() => setSelectedOption(option)}
-                    className={`p-2 rounded ${
+                    className={`p-2 sm:p-4 rounded-lg border border-transparent text-sm sm:text-lg font-medium ${
                       selectedOption === option
-                        ? "bg-blue-500 text-white"
-                        : "bg-gray-200 hover:bg-gray-300"
+                        ? "bg-blue-500 text-white shadow-lg"
+                        : "bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-white"
                     }`}
                     disabled={hasGuessed || gameFinished}
                   >
@@ -528,46 +592,73 @@ const PokemonGuessingGame = () => {
                   </button>
                 ))}
               </div>
+
               {!hasGuessed && !gameFinished && (
-                <button
-                  onClick={handleGuess}
-                  className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
-                  disabled={!selectedOption}
-                >
-                  Submit Guess
-                </button>
-              )}
-              <div className="mt-4">
-                <div className="dark:text-white">
-                  Score - {gameData?.player1?.username}: {score.player1}
+                <div className="flex justify-center mb-4 md:mb-6">
+                  <button
+                    onClick={handleGuess}
+                    className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 sm:py-3 px-4 sm:px-6 rounded-lg shadow-md transition-colors duration-300"
+                    disabled={!selectedOption}
+                  >
+                    Submit Guess
+                  </button>
                 </div>
-                <div className="dark:text-white">
-                  Score - {gameData?.player2?.username}: {score.player2}
+              )}
+
+              <div className="text-lg text-center dark:text-white">
+                <h3 className="text-xl font-bold mb-4 dark:text-white">
+                  Final Scores
+                </h3>
+                <div className="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg shadow-md">
+                  <div className="flex justify-between items-center border-b border-gray-300 dark:border-gray-600 pb-2 mb-2">
+                    <span className="font-semibold text-lg">
+                      {gameData?.player1?.username}
+                    </span>
+                    <span className="font-normal text-lg text-gray-700 dark:text-gray-300">
+                      {score.player1}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="font-semibold text-lg">
+                      {gameData?.player2?.username}
+                    </span>
+                    <span className="font-normal text-lg text-gray-700 dark:text-gray-300">
+                      {score.player2}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
           ) : gameData?.status === "finished" ? (
-            <div>
-              <h2 className="text-2xl font-bold mb-4 dark:text-white">
+            <div className="p-6 mx-auto max-w-lg bg-white dark:bg-gray-800 rounded-lg shadow-lg">
+              <h2 className="text-4xl font-bold mb-4 text-center dark:text-white">
                 Game Over!
               </h2>
-              <div className="text-xl mb-4 dark:text-white">Final Scores:</div>
+              <div className="text-xl font-semibold mb-4 text-center dark:text-white">
+                Final Scores:
+              </div>
               <div className="text-lg dark:text-white">
-                <div>
-                  {gameData?.player1?.username}: {gameData.finalScores.player1}
+                <div className="flex justify-between mb-2 px-4 py-2 border-b border-gray-300 dark:border-gray-600">
+                  <span className="font-medium">
+                    {gameData?.player1?.username}:
+                  </span>
+                  <span>{gameData.finalScores.player1}</span>
                 </div>
-                <div>
-                  {gameData?.player2?.username}: {gameData.finalScores.player2}
+                <div className="flex justify-between px-4 py-2">
+                  <span className="font-medium">
+                    {gameData?.player2?.username}:
+                  </span>
+                  <span>{gameData.finalScores.player2}</span>
                 </div>
               </div>
-              <div className="mt-4 dark:text-white">
+              <div className="text-xl font-bold mt-4 text-center dark:text-white">
                 {gameData.finalScores.player1 > gameData.finalScores.player2
                   ? `${gameData?.player1?.username} wins!`
                   : gameData.finalScores.player2 > gameData.finalScores.player1
                   ? `${gameData?.player2?.username} wins!`
                   : "It's a tie!"}
               </div>
-              <div className="mt-4 dark:text-white">
+              <div className="text-md mt-4 text-center dark:text-white">
                 The game will be deleted in {countdown} seconds.
               </div>
             </div>
