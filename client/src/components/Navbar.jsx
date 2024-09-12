@@ -21,7 +21,7 @@ export default function Navbar() {
             />
           </Link>
           <span className="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">
-            Guess That Pokemon
+            Guess That Pokémon
           </span>
         </div>
 
