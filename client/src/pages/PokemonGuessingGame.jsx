@@ -15,7 +15,6 @@ import { RiFileCopyLine } from "react-icons/ri";
 import { MdDone } from "react-icons/md";
 import Swal from "sweetalert2";
 import { Howl, Howler } from "howler";
-import { FaVolumeUp, FaVolumeMute } from "react-icons/fa";
 
 const PokemonGuessingGame = () => {
   const [gameId, setGameId] = useState("");
@@ -54,12 +53,6 @@ const PokemonGuessingGame = () => {
     if (soundName in sounds) {
       sounds[soundName].stop();
     }
-  };
-
-  // Toggle sound
-  const toggleSound = () => {
-    setSoundEnabled(!soundEnabled);
-    Howler.mute(!soundEnabled);
   };
 
   useEffect(() => {
@@ -127,7 +120,6 @@ const PokemonGuessingGame = () => {
     setGameId(newGameId);
     setCurrentPlayer("player1");
     localStorage.setItem("role", "player1");
-    playSound("joinGame");
   };
 
   const joinExistingGame = async () => {
@@ -146,7 +138,6 @@ const PokemonGuessingGame = () => {
       setGameId(inputGameId);
       setCurrentPlayer("player2");
       localStorage.setItem("role", "player2");
-      playSound("joinGame");
     } else {
       Swal.fire({
         icon: "error",
@@ -195,9 +186,6 @@ const PokemonGuessingGame = () => {
                 player1: currentData.player1.score,
                 player2: currentData.player2.score,
               };
-
-              stopSound("joinGame");
-              playSound("gameOver");
             } else {
               currentData.currentRound += 1;
               currentData.roundStartTime = Date.now();
@@ -257,9 +245,6 @@ const PokemonGuessingGame = () => {
               player1: currentData.player1.score,
               player2: currentData.player2.score,
             };
-
-            stopSound("joinGame");
-            playSound("gameOver");
           } else {
             currentData.currentRound += 1;
             currentData.roundStartTime = Date.now();
@@ -492,16 +477,6 @@ const PokemonGuessingGame = () => {
         <h1 className="text-5xl font-bold mb-8 dark:text-white">
           Pokémon Guessing Game
         </h1>
-        <button
-          onClick={toggleSound}
-          className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded mb-4 flex items-center"
-        >
-          {soundEnabled ? (
-            <FaVolumeUp className="mr-2" />
-          ) : (
-            <FaVolumeMute className="mr-2" />
-          )}
-        </button>
       </div>
       {!gameId ? (
         <div className="py-8 px-4 mx-auto max-w-screen-xl">
