@@ -36,8 +36,6 @@ const PokemonGuessingGame = () => {
 
   // Initialize sounds
   const sounds = {
-    joinGame: new Howl({ src: ["/sounds/joinGame.wav"], html5: true }),
-    timeout: new Howl({ src: ["/sounds/timeOut.wav"], html5: true }),
     wrong: new Howl({ src: ["/sounds/wrong.wav"], html5: true }),
     correct: new Howl({ src: ["/sounds/correct.wav"], html5: true }),
     gameOver: new Howl({ src: ["/sounds/gameOver.wav"], html5: true }),
@@ -46,12 +44,6 @@ const PokemonGuessingGame = () => {
   const playSound = (soundName) => {
     if (soundName in sounds) {
       sounds[soundName].play();
-    }
-  };
-
-  const stopSound = (soundName) => {
-    if (soundName in sounds) {
-      sounds[soundName].stop();
     }
   };
 
@@ -177,6 +169,12 @@ const PokemonGuessingGame = () => {
             const player2Correct =
               currentData.player2.guess.toLowerCase() === correctAnswer;
 
+            if (player1Correct || player2Correct) {
+              playSound("correct");
+            } else {
+              playSound("wrong");
+            }
+
             currentData.player1.score += player1Correct ? 100 : 0;
             currentData.player2.score += player2Correct ? 100 : 0;
 
@@ -235,6 +233,12 @@ const PokemonGuessingGame = () => {
             currentData.player1.guess.toLowerCase() === correctAnswer;
           const player2Correct =
             currentData.player2.guess.toLowerCase() === correctAnswer;
+
+          if (player1Correct || player2Correct) {
+            playSound("correct");
+          } else {
+            playSound("wrong");
+          }
 
           currentData.player1.score += player1Correct ? 100 : 0;
           currentData.player2.score += player2Correct ? 100 : 0;
@@ -361,7 +365,7 @@ const PokemonGuessingGame = () => {
 
       return () => clearInterval(timer);
     }
-  }, [gameId, gameData, gameFinished]);
+  }, [gameId, gameData, gameFinished, soundEnabled]);
 
   useEffect(() => {
     if (gameId && gameFinished) {
