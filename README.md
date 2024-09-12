@@ -5,6 +5,8 @@ Client Guess Pokémon
 Overview Aplikasi:
 Aplikasi ini adalah game tebak gambar Pokémon di mana pemain berlomba untuk menebak Pokémon yang ditampilkan di dalam card. Jawaban pemain dikirim dalam bentuk multiple choise. Game ini bersifat real-time, memungkinkan banyak pemain untuk bermain bersamaan.
 
+Link: https://who-s-that-pokemon-d3180.web.app
+
 ## Main Features:
 
 Pokémon Display in Cards:
@@ -54,3 +56,4 @@ Framework CSS Tailwind, Framework Frontend React
 
 - Setup Feature
 - Debugging
+
