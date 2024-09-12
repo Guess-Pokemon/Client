@@ -479,19 +479,21 @@ const PokemonGuessingGame = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-5xl font-bold mb-8 dark:text-white">
-        Pokémon Guessing Game
-      </h1>
-      <button
-        onClick={toggleSound}
-        className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded mb-4 flex items-center"
-      >
-        {soundEnabled ? (
-          <FaVolumeUp className="mr-2" />
-        ) : (
-          <FaVolumeMute className="mr-2" />
-        )}
-      </button>
+      <div className="py-4 px-4 mx-auto max-w-screen-xl">
+        <h1 className="text-5xl font-bold mb-8 dark:text-white">
+          Pokémon Guessing Game
+        </h1>
+        <button
+          onClick={toggleSound}
+          className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded mb-4 flex items-center"
+        >
+          {soundEnabled ? (
+            <FaVolumeUp className="mr-2" />
+          ) : (
+            <FaVolumeMute className="mr-2" />
+          )}
+        </button>
+      </div>
       {!gameId ? (
         <div className="py-8 px-4 mx-auto max-w-screen-xl">
           <div className="flex flex-col space-y-4">
@@ -523,7 +525,7 @@ const PokemonGuessingGame = () => {
           </div>
         </div>
       ) : (
-        <div>
+        <div className="px-4 mx-auto max-w-screen-xl">
           <div className="mb-4 text-xl dark:text-white">
             Game ID: {gameId}
             <button
