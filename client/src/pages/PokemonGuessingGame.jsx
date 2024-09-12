@@ -327,6 +327,8 @@ const PokemonGuessingGame = () => {
           if (soundEnabled) {
             playSound("gameOver");
           }
+          localStorage.removeItem("role");
+          localStorage.removeItem("gameId");
         } else if (data?.status === "ready") {
           setHasGuessed(data[currentPlayer]?.guess !== "");
           setCountdown(30);
