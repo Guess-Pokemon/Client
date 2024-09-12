@@ -148,7 +148,11 @@ const PokemonGuessingGame = () => {
       localStorage.setItem("role", "player2");
       playSound("joinGame");
     } else {
-      alert("Game not available or already started");
+      Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: "Game not available or already started",
+      });
     }
     setInputGameId("");
   };
@@ -454,7 +458,8 @@ const PokemonGuessingGame = () => {
         title: "It's a Draw!",
         imageUrl: drawImage,
         imageAlt: "Draw Image",
-        confirmButtonText: "OK",
+        timer: 4000,
+        showConfirmButton: false,
       });
     } else {
       if (data.player1.username === username) {
@@ -462,7 +467,8 @@ const PokemonGuessingGame = () => {
           title: player1Wins ? "You Win!" : "You Lose!",
           imageUrl: player1Wins ? winnerImage : loserImage,
           imageAlt: "Result Image",
-          confirmButtonText: "OK",
+          timer: 4000,
+          showConfirmButton: false,
         });
       }
 
@@ -471,7 +477,8 @@ const PokemonGuessingGame = () => {
           title: player2Wins ? "You Win!" : "You Lose!",
           imageUrl: player2Wins ? winnerImage : loserImage,
           imageAlt: "Result Image",
-          confirmButtonText: "OK",
+          timer: 4000,
+          showConfirmButton: false,
         });
       }
     }
